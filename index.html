@@ -1,1 +1,272 @@
-<!-- Placeholder for index.html -->
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PharmaLogic | Weight Loss Medication Consultation (UK)</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Start a safe, pharmacist-reviewed consultation for Mounjaro weight loss injections. UK licensed, secure and fast.">
+  <meta name="author" content="PharmaLogic">
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pharmalogic-weightlossmedication.com/" />
+
+  <!-- OG -->
+  <meta property="og:title" content="PharmaLogic | Weight Loss Medication Consultation" />
+  <meta property="og:description" content="Begin your consultation for Mounjaro injections with UK-licensed pharmacists." />
+  <meta property="og:image" content="logo.jpeg" />
+  <meta property="og:type" content="website" />
+
+  <meta name="theme-color" content="#064635" />
+
+  <link rel="icon" href="favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    /* HEADER */
+    header {
+      background: #064635;
+      color: white;
+      padding: 1.2rem 2rem;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header a.brand {
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: flex;
+      gap: 0.7rem;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+    }
+    nav a, nav button {
+      background: white;
+      color: #064635;
+      padding: 0.45rem 1.4rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+    nav a:hover, nav button:hover { background: #1a7c3e; color: white; }
+
+    #dropdown-menu { display: none; }
+    #dropdown-menu.show { display: block; }
+  </style>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo.jpeg" alt="PharmaLogic Logo" style="height:50px">
+    PharmaLogic
+  </a>
+
+  <nav class="flex gap-3 items-center">
+    <a href="index.html">Home</a>
+    <button onclick="location.href='product.html'">Products</button>
+
+    <div class="relative">
+      <button id="account-btn" class="bg-white text-green-900 px-4 py-2 rounded">Account</button>
+      <div id="dropdown-menu" class="absolute right-0 bg-white shadow rounded w-40 mt-2">
+        <a id="menu-login" href="login.html" class="block px-4 py-2 hover:bg-green-100">Login</a>
+        <a id="menu-register" href="register.html" class="block px-4 py-2 hover:bg-green-100">Register</a>
+        <a id="menu-dashboard" href="dashboard.html" class="hidden block px-4 py-2 hover:bg-green-100">Dashboard</a>
+        <button id="menu-logout" class="hidden w-full text-left px-4 py-2 hover:bg-green-100">Logout</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+
+<script>
+  document.getElementById("account-btn").addEventListener("click", () => {
+    document.getElementById("dropdown-menu").classList.toggle("show");
+  });
+
+  const cid = localStorage.getItem("customer_id");
+  if (cid) {
+    document.getElementById("menu-login").style.display = "none";
+    document.getElementById("menu-register").style.display = "none";
+    document.getElementById("menu-dashboard").style.display = "block";
+    document.getElementById("menu-logout").style.display = "block";
+  }
+
+  document.getElementById("menu-logout").addEventListener("click", () => {
+    localStorage.clear();
+    location.href = "index.html";
+  });
+</script>
+
+
+
+<!-- HERO SECTION (Gradient + Illustration + Trust Badges) -->
+<section class="pt-32 pb-20 px-4 bg-gradient-to-br from-blue-50 to-blue-100" data-aos="fade-up">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+
+    <!-- TEXT -->
+    <div>
+      <h1 class="text-4xl md:text-5xl font-bold text-blue-900 leading-tight mb-5">
+        Mounjaro Weight Loss Consultation
+      </h1>
+
+      <p class="text-lg md:text-xl text-gray-700 mb-8">
+        Start a safe, secure, clinically assessed consultation to access
+        <strong>Mounjaro weight loss injections</strong> in the UK.
+      </p>
+
+      <button onclick="location.href='consultation.html'"
+        class="bg-green-700 hover:bg-green-800 text-white px-8 py-4 rounded-lg shadow-lg font-semibold text-lg transition">
+        Start Consultation
+      </button>
+
+      <!-- TRUST BADGES -->
+      <div class="flex flex-wrap gap-6 mt-10 items-center">
+
+        <div class="flex items-center gap-3">
+          <img src="https://img.icons8.com/fluency/48/approval.png" class="h-10">
+          <p class="font-semibold text-gray-700">GPhC Registered</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <img src="https://img.icons8.com/color/48/lock.png" class="h-10">
+          <p class="font-semibold text-gray-700">Secure & Encrypted</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <img src="https://img.icons8.com/external-flatart-icons-outline-flatarticons/64/000000/external-pharmacy-medical-flatart-icons-outline-flatarticons.png" class="h-10">
+          <p class="font-semibold text-gray-700">UK Pharmacy</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ILLUSTRATION -->
+    <div class="flex justify-center">
+      <img src="hero-illustration.png"
+           alt="Medical Consultation Illustration"
+           class="w-full max-w-md drop-shadow-xl rounded-xl">
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- HOW IT WORKS -->
+<section class="py-20 bg-white" data-aos="fade-up">
+  <h2 class="text-3xl font-bold text-center text-blue-900 mb-14">How It Works</h2>
+
+  <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-4">
+
+    <div class="bg-blue-50 p-8 rounded-xl shadow text-center" data-aos="zoom-in">
+      <img src="https://img.icons8.com/ios-filled/100/survey.png" class="mx-auto mb-4 h-16">
+      <h3 class="font-semibold text-xl mb-2">1. Consultation</h3>
+      <p class="text-gray-600">Complete clinically required questions.</p>
+    </div>
+
+    <div class="bg-blue-50 p-8 rounded-xl shadow text-center" data-aos="zoom-in" data-aos-delay="150">
+      <img src="https://img.icons8.com/ios-filled/100/id-verified.png" class="mx-auto mb-4 h-16">
+      <h3 class="font-semibold text-xl mb-2">2. ID & Video Upload</h3>
+      <p class="text-gray-600">Upload photo ID and verification video.</p>
+    </div>
+
+    <div class="bg-blue-50 p-8 rounded-xl shadow text-center" data-aos="zoom-in" data-aos-delay="300">
+      <img src="https://img.icons8.com/ios-filled/100/doctor-male.png" class="mx-auto mb-4 h-16">
+      <h3 class="font-semibold text-xl mb-2">3. Pharmacist Review</h3>
+      <p class="text-gray-600">A GPhC pharmacist reviews and approves.</p>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- PRODUCTS -->
+<section class="py-20 bg-gray-50">
+  <h2 class="text-3xl font-bold text-center text-blue-900 mb-14">Available Strengths</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 max-w-6xl mx-auto px-4">
+
+    <!-- PRODUCT CARDS -->
+    <a href="product-2-5mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 2.5mg-pen.jpg" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 2.5mg – £115</p>
+    </a>
+
+    <a href="product-5mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 5mg-pen.jpg" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 5mg – £145</p>
+    </a>
+
+    <a href="product-7-5mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 7.5mg-pen.jpg" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 7.5mg – £170</p>
+    </a>
+
+    <a href="product-10mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 10mg-pen.jpeg" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 10mg – £185</p>
+    </a>
+
+    <a href="product-12-5mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 12.5mg-pen.webp" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 12.5mg – £200</p>
+    </a>
+
+    <a href="product-15mg.html" class="block bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+      <img src="mounjaro 15mg-pen.webp" class="h-40 mx-auto object-contain mb-4">
+      <p class="text-center font-semibold text-blue-900">Mounjaro 15mg – £200</p>
+    </a>
+
+  </div>
+</section>
+
+
+
+<!-- FOOTER -->
+<footer class="bg-green-900 text-white py-14">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 px-4">
+
+    <div>
+      <h3 class="text-lg font-bold mb-4">About Us</h3>
+      <p class="text-sm leading-relaxed">
+        Pharmalogic is an established healthcare group with dedicated clinical pharmacy services across the UK.
+        <br><br>
+        Superintendent Pharmacist:
+        <strong>Haroon Amanji (GPhC 2070534)</strong>
+      </p>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-bold mb-4">Head Office</h3>
+      <p class="text-sm">
+        464 Ranglet Road, Walton Summit Centre<br>
+        Preston, PR5 8AR<br><br>
+        Tel: <a href="tel:+441772620526" class="underline">01772 620526</a><br>
+        Email: <a href="mailto:info@pharmalogic.co.uk" class="underline">info@pharmalogic.co.uk</a>
+      </p>
+    </div>
+
+  </div>
+
+  <div class="text-center text-xs mt-12 border-t border-gray-700 pt-4">
+    © 2024 MDS Healthcare Limited. All Rights Reserved.
+  </div>
+</footer>
+
+<script>AOS.init();</script>
+</body>
+</html>

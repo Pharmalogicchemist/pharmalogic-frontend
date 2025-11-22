@@ -67,6 +67,17 @@ document.getElementById("register-form").addEventListener("submit", async functi
   const confirm = document.getElementById("password_confirm").value.trim();
   const msg = document.getElementById("register-message");
 
+  // Reset message
+  msg.innerText = "";
+  msg.style.color = "black";
+
+  // Client-side validation
+  if (!fullname || !email || !password || !confirm) {
+    msg.innerText = "All fields are required.";
+    msg.style.color = "red";
+    return;
+  }
+
   if (password !== confirm) {
     msg.innerText = "Passwords do not match.";
     msg.style.color = "red";
@@ -83,21 +94,37 @@ document.getElementById("register-form").addEventListener("submit", async functi
       body: JSON.stringify({ fullname, email, password })
     });
 
-    const data = await res.json();
+    const text = await res.text();   // to avoid JSON parsing crash
+    let data;
 
-    if (data.success) {
-      msg.innerText = "Account created! Redirecting to login...";
-      msg.style.color = "green";
-
-      setTimeout(() => window.location.href = "login.html", 1500);
-
-    } else {
-      msg.innerText = data.message || "Registration failed.";
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      msg.innerText = "Invalid server response.";
       msg.style.color = "red";
+      return;
     }
 
+    if (!res.ok) {
+      // Displays proper backend message (error or details)
+      msg.innerText = data.error || data.details || "Registration failed.";
+      msg.style.color = "red";
+      return;
+    }
+
+    if (data.success) {
+      msg.innerText = "Account created successfully! Redirecting...";
+      msg.style.color = "green";
+      setTimeout(() => window.location.href = "login.html", 1500);
+      return;
+    }
+
+    msg.innerText = data.error || "Registration failed.";
+    msg.style.color = "red";
+
   } catch(err) {
-    msg.innerText = "Server error. Try again.";
+    console.error("Frontend error:", err);
+    msg.innerText = "Server unreachable. Please try again.";
     msg.style.color = "red";
   }
 });

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pharmalogic - Mounjaro weight loss Injection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #333;
+    }
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    form input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Buy Mounjaro 2.5mg Weight Loss Injection</h1>
+    <p><strong>Price:</strong> £125.00 (Monthly Pack)</p>
+    <p>Mounjaro weight loss injection is a fast-acting monthly weight loss solution. Recommended by certified pharmacists and clinically tested.</p>
+
+    <hr />
+
+    <h2>Submit Your Info</h2>
+    <p>(For prescription and follow-up communication)</p>
+
+    <form id="customer-form">
+      <input type="text" name="full_name" placeholder="Full Name" required />
+      <input type="email" name="email" placeholder="Email Address" required />
+      <button type="submit">Submit Info & Buy Now</button>
+    </form>
+
+    <p id="form-response" style="margin-top:1rem;"></p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ✅ Your Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4RMS3cZEcwcxmEK2mfCH6uS9fP_uz3-A",
+      authDomain: "pharmalogic-weightloss-cfbf2.firebaseapp.com",
+      projectId: "pharmalogic-weightloss-cfbf2",
+      storageBucket: "pharmalogic-weightloss-cfbf2.appspot.com",
+      messagingSenderId: "508838130812",
+      appId: "1:508838130812:web:09888169609b9b361245f9"
+    };
+
+    // ✅ Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById('customer-form');
+    const responseText = document.getElementById('form-response');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fullName = form.full_name.value.trim();
+      const email = form.email.value.trim();
+
+      if (!fullName || !email) {
+        responseText.innerText = "❌ Please fill in all fields.";
+        responseText.style.color = "red";
+        return;
+      }
+
+      try {
+        await db.collection('customers').add({
+          full_name: fullName,
+          email: email,
+          submitted_at: new Date()
+        });
+
+        responseText.innerText = "✅ Info submitted! Redirecting to payment...";
+        responseText.style.color = "green";
+
+        setTimeout(() => {
+          window.location.href = "https://buy.stripe.com/test_14A00lcfU1gH7b838k3cc00";
+        }, 1500);
+      } catch (error) {
+        console.error("Firestore Error:", error);
+        responseText.innerText = "❌ Error saving data. Please try again.";
+        responseText.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>

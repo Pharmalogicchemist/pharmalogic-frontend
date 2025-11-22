@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consultation & Payment - PharmaLogic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <!-- HEADER -->
+  <div class="bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
+    <a href="index.html"><img src="logo.jpeg" alt="PharmaLogic Logo" class="h-10" /></a>
+    <a href="index.html" class="bg-white text-blue-900 font-semibold px-4 py-2 rounded hover:bg-gray-100">Home</a>
+  </div>
+
+  <!-- FORM -->
+  <div class="max-w-4xl mx-auto p-6 bg-white shadow-md mt-10 rounded-lg">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Start Consultation & Payment</h1>
+    <form id="consultation-form">
+
+      <!-- Step 1: Consultation -->
+      <fieldset id="step-1">
+        <legend class="font-bold mb-4 text-xl text-gray-700">Patient Consultation & Medical History</legend>
+
+        <label class="block mb-3">Full Name*:
+          <input type="text" name="patient_name" required class="border p-2 w-full rounded" />
+        </label>
+
+        <label class="block mb-3">Date of Birth*:
+          <input type="date" name="dob" required class="border p-2 w-full rounded" />
+        </label>
+
+        <label class="block mb-3">Are you on mounjaro or not?*:
+          <select name="on_mounjaro" required class="border p-2 w-full rounded">
+            <option value="">Select...</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </label>
+
+        <label class="block mb-3">Weight (kg)*:
+          <input type="number" name="weight" id="weight" step="0.1" required class="border p-2 w-full rounded" />
+        </label>
+
+        <label class="block mb-3">Height (cm)*:
+          <input type="number" name="height" id="height" step="0.1" required class="border p-2 w-full rounded" />
+        </label>
+
+        <label class="block mb-3">Calculated BMI:
+          <input type="text" id="bmi" name="bmi" readonly class="border p-2 w-full rounded bg-gray-100" />
+        </label>
+
+        <label class="block mb-3">Do you have diabetes?*
+          <select name="t2d" required class="border p-2 w-full rounded">
+            <option value="">Select...</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </label>
+
+        <label class="block mb-3">Are you currently pregnant, breastfeeding, or planning to become pregnant?*
+          <select name="pregnancy" required class="border p-2 w-full rounded">
+            <option value="">Select...</option>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </label>
+
+        <label class="block mb-3">Do you have any of the following conditions?
+          <div class="mt-1 text-sm space-y-1">
+            <label><input type="checkbox" name="conditions" value="Thyroid cancer" /> Thyroid cancer</label><br />
+            <label><input type="checkbox" name="conditions" value="Pancreatitis" /> Pancreatitis</label><br />
+            <label><input type="checkbox" name="conditions" value="Kidney/liver disease" /> Kidney/Liver disease</label><br />
+            <label><input type="checkbox" name="conditions" value="Eating disorder" /> Eating disorder</label><br />
+            <label><input type="checkbox" name="conditions" value="None" /> None</label>
+          </div>
+        </label>
+
+        <label class="block mb-3">Are you currently taking any medications? List them:
+          <textarea name="medications" class="border p-2 w-full rounded"></textarea>
+        </label>
+
+        <label class="block mb-3 font-semibold">Which strength of Mounjaro are you looking for?*
+          <select name="mounjaro_strength" id="mounjaro_strength" required class="border p-2 w-full rounded">
+            <option value="">Select one</option>
+            <option value="2.5mg">2.5mg</option>
+            <option value="5mg">5mg</option>
+            <option value="7.5mg">7.5mg</option>
+            <option value="10mg">10mg</option>
+            <option value="12.5mg">12.5mg</option>
+            <option value="15mg">15mg</option>
+          </select>
+        </label>
+
+        <div id="proof-id" class="mb-4 hidden">
+          <label class="block mb-2 font-semibold">Upload Valid Proof of ID</label>
+          <input type="file" name="proof_of_id" class="w-full" />
+        </div>
+
+        <div id="prescription-div" class="mb-4 hidden">
+          <label class="block mb-2 font-semibold">Upload Previous Prescription</label>
+          <input type="file" name="previous_prescription" class="w-full" />
+        </div>
+
+        <div id="video-div" class="mb-4 hidden">
+          <label class="block mb-2 font-semibold">Upload a short video (on scale & verification)</label>
+          <input type="file" name="video_upload" accept="video/*" class="w-full" />
+        </div>
+
+        <button type="button" id="to-step-2" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mt-4">Next: Billing & Shipping</button>
+      </fieldset>
+
+      <!-- Step 2: Billing & Shipping -->
+      <fieldset id="step-2" class="hidden">
+        <legend class="font-bold mb-4 text-xl text-gray-700">Billing & Shipping</legend>
+
+        <label class="block mb-3">Address Line 1*:
+          <input type="text" name="billing_address_1" required class="border p-2 w-full rounded" />
+        </label>
+        <label class="block mb-3">City*:
+          <input type="text" name="billing_city" required class="border p-2 w-full rounded" />
+        </label>
+        <label class="block mb-3">Postcode*:
+          <input type="text" name="billing_postcode" required class="border p-2 w-full rounded" />
+        </label>
+        <label class="block mb-3">Mobile Number* (+44...):
+          <input type="tel" name="billing_phone" id="billing-phone" required class="border p-2 w-full rounded" />
+          <p id="billing-phone-error" class="text-red-600 text-sm mt-1 hidden">Invalid UK phone number.</p>
+        </label>
+        <label class="block mb-3">Email*:
+          <input type="email" name="billing_email" required class="border p-2 w-full rounded" />
+        </label>
+
+        <div class="mt-6">
+          <button type="button" id="back-to-step-1" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded font-semibold mr-4">Back</button>
+          <button type="button" id="to-step-3" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">Next: Review & Pay</button>
+        </div>
+      </fieldset>
+
+      <!-- Step 3: Review -->
+      <fieldset id="step-3" class="hidden">
+        <legend class="font-bold mb-4 text-xl text-gray-700">Review & Payment</legend>
+
+        <div id="review-summary" class="mb-6 bg-gray-50 border p-4 rounded max-h-96 overflow-y-auto"></div>
+
+        <div class="mt-6">
+          <button type="button" id="back-to-step-2" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded font-semibold mr-4">Back</button>
+          <button type="button" id="pay-button" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">Submit & Pay</button>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+
+  <!-- Stripe Card Payment -->
+  <div id="payment-section" class="hidden">
+    <h2 class="text-xl font-semibold mb-4">Card Payment</h2>
+    <div id="card-element" class="border p-4 rounded-md"></div>
+    <div id="card-errors" class="text-red-600 mt-2"></div>
+    <button type="submit" class="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Submit & Pay</button>
+  </div>
+
+  <!-- JavaScript (navigation, validation, submission) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('consultation-form');
+      const step1 = document.getElementById('step-1');
+      const step2 = document.getElementById('step-2');
+      const step3 = document.getElementById('step-3');
+
+      const toStep2Btn = document.getElementById('to-step-2');
+      const toStep3Btn = document.getElementById('to-step-3');
+      const backToStep1Btn = document.getElementById('back-to-step-1');
+      const backToStep2Btn = document.getElementById('back-to-step-2');
+
+      const phoneInput = document.getElementById('billing-phone');
+      const phoneError = document.getElementById('billing-phone-error');
+
+      const weightInput = document.getElementById('weight');
+      const heightInput = document.getElementById('height');
+      const bmiInput = document.getElementById('bmi');
+
+      const mounjaroStrengthSelect = document.getElementById('mounjaro_strength');
+      const proofIdDiv = document.getElementById('proof-id');
+      const prescriptionDiv = document.getElementById('prescription-div');
+      const videoDiv = document.getElementById('video-div');
+
+      function scrollTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function validatePhone() {
+        const valid = /^\+44\d{10}$/.test(phoneInput.value.trim());
+        phoneInput.setCustomValidity(valid ? '' : 'Invalid');
+        phoneError.classList.toggle('hidden', valid);
+        return valid;
+      }
+
+      // BMI calculation
+      function calculateBMI() {
+        const w = parseFloat(weightInput.value);
+        const h = parseFloat(heightInput.value);
+        if (!w || !h || h <= 0) {
+          bmiInput.value = '';
+          return null;
+        }
+        const bmi = w / ((h / 100) ** 2);
+        bmiInput.value = bmi.toFixed(1);
+        return bmi;
+      }
+
+      weightInput.addEventListener('input', calculateBMI);
+      heightInput.addEventListener('input', calculateBMI);
+
+      // Strength change - show/hide upload options
+      mounjaroStrengthSelect.addEventListener('change', () => {
+        const val = mounjaroStrengthSelect.value;
+        if (val === '2.5mg') {
+          proofIdDiv.classList.remove('hidden');
+          videoDiv.classList.remove('hidden');
+          prescriptionDiv.classList.add('hidden');
+        } else if (val) {
+          proofIdDiv.classList.remove('hidden');
+          prescriptionDiv.classList.remove('hidden');
+          videoDiv.classList.remove('hidden');
+        } else {
+          proofIdDiv.classList.add('hidden');
+          prescriptionDiv.classList.add('hidden');
+          videoDiv.classList.add('hidden');
+        }
+      });
+
+      toStep2Btn.addEventListener('click', () => {
+        // Check form validity for step 1 inputs
+        const requiredInputs = step1.querySelectorAll('input, select, textarea');
+        for (let input of requiredInputs) {
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return;
+          }
+        }
+
+        // Check BMI condition
+        const bmi = calculateBMI();
+        if (bmi === null || bmi < 27) {
+          alert('Your BMI is below 27. According to the rules, you are not allowed to take medication.');
+          return;
+        }
+
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+        scrollTop();
+      });
+
+      toStep3Btn.addEventListener('click', () => {
+        if (!validatePhone()) {
+          phoneInput.reportValidity();
+          return;
+        }
+        const requiredInputs = step2.querySelectorAll('input, select, textarea');
+        for (let input of requiredInputs) {
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return;
+          }
+        }
+        populateReview();
+        step2.classList.add('hidden');
+        step3.classList.remove('hidden');
+        scrollTop();
+      });
+
+      backToStep1Btn.addEventListener('click', () => {
+        step2.classList.add('hidden');
+        step1.classList.remove('hidden');
+        scrollTop();
+      });
+
+      backToStep2Btn.addEventListener('click', () => {
+        step3.classList.add('hidden');
+        step2.classList.remove('hidden');
+        scrollTop();
+      });
+
+      function populateReview() {
+        const summary = document.getElementById('review-summary');
+        const data = new FormData(form);
+        let html = '<h3 class="font-semibold mb-2">Review Your Details</h3><ul class="list-disc pl-5 space-y-1">';
+        for (let [key, val] of data.entries()) {
+          if (!val || ["proof_of_id", "previous_prescription", "video_upload"].includes(key)) continue;
+          html += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${val}</li>`;
+        }
+        html += '</ul>';
+        summary.innerHTML = html;
+      }
+
+      document.getElementById('pay-button').addEventListener('click', () => {
+        window.location.href = 'payment.html';
+      });
+    });
+  </script>
+</body>
+</html>

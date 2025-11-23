@@ -1,0 +1,7 @@
+{
+  "name": "pharmalogic-functions",
+  "version": "1.0.0",
+  "dependencies": {
+    "@neondatabase/client": "^0.6.0"
+  }
+}

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@neondatabase/client": "1.6.0",
+    "@neondatabase/client": "1.4.2",
     "bcryptjs": "2.4.3",
     "jsonwebtoken": "9.0.2"
   }

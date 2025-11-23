@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/auth-login.js
+import { sql } from "./database.js";
 import bcrypt from "bcryptjs";
 
 export default async (req) => {
@@ -17,29 +18,24 @@ export default async (req) => {
       );
     }
 
-    const client = await getClient();
+    const rows = await sql`
+      SELECT id, fullname, email, password_hash, role
+      FROM auth_users
+      WHERE email = ${email}
+      LIMIT 1;
+    `;
 
-    const result = await client.query(
-      `SELECT id, fullname, email, password_hash, role
-       FROM auth_users
-       WHERE email = $1
-       LIMIT 1;`,
-      [email]
-    );
-
-    if (result.rows.length === 0) {
-      await client.end();
+    if (rows.length === 0) {
       return Response.json(
         { success: false, message: "Invalid email or password" },
         { status: 401 }
       );
     }
 
-    const user = result.rows[0];
+    const user = rows[0];
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
-      await client.end();
       return Response.json(
         { success: false, message: "Invalid email or password" },
         { status: 401 }
@@ -48,18 +44,20 @@ export default async (req) => {
 
     delete user.password_hash;
 
-    await client.end();
-
     return Response.json({
       success: true,
       message: "Auth login successful",
-      user
+      user,
       // you can add JWT token here later
     });
   } catch (err) {
     console.error("AUTH LOGIN ERROR:", err);
     return Response.json(
-      { success: false, message: "Internal server error", details: err.message },
+      {
+        success: false,
+        message: "Internal server error",
+        details: err.message,
+      },
       { status: 500 }
     );
   }

@@ -1,28 +1,59 @@
-import { Client } from "@neondatabase/client";
+import { getClient } from "./_db.js";
 import bcrypt from "bcryptjs";
 
 export default async (req) => {
   try {
-    const { fullname, email, password } = await req.json();
+    const method = req.method || req.httpMethod;
+    if (method !== "POST") {
+      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
+    }
 
-    const client = new Client(process.env.NETLIFY_DATABASE_URL);
-    await client.connect();
+    const { fullname, email, password, role = "admin" } = await req.json();
+
+    if (!fullname || !email || !password) {
+      return Response.json(
+        { error: "fullname, email, and password are required" },
+        { status: 400 }
+      );
+    }
+
+    const client = await getClient();
+
+    // Check duplicate
+    const check = await client.query(
+      "SELECT id FROM auth_users WHERE email = $1 LIMIT 1;",
+      [email]
+    );
+
+    if (check.rows.length > 0) {
+      await client.end();
+      return Response.json(
+        { error: "Email already registered. Please log in." },
+        { status: 409 }
+      );
+    }
 
     const hash = await bcrypt.hash(password, 10);
 
-    const sql = `
-      INSERT INTO auth_users (fullname, email, password_hash)
-      VALUES ($1, $2, $3)
-      RETURNING id, fullname, email;
-    `;
+    const result = await client.query(
+      `INSERT INTO auth_users (fullname, email, password_hash, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, fullname, email, role;`,
+      [fullname, email, hash, role]
+    );
 
-    const result = await client.query(sql, [fullname, email, hash]);
+    await client.end();
 
-    return Response.json({ success: true, user: result.rows[0] });
+    return Response.json({
+      success: true,
+      message: "Auth user registered successfully",
+      user: result.rows[0]
+    });
   } catch (err) {
+    console.error("AUTH REGISTER ERROR:", err);
     return Response.json(
-      { error: "Auth registration failed", details: err.message },
-      { status: 400 }
+      { success: false, message: "Registration failed", details: err.message },
+      { status: 500 }
     );
   }
 };

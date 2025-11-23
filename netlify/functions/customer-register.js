@@ -1,65 +1,70 @@
-import { getClient } from "./_db.js";
+// netlify/functions/customer-register.js
+import { Client } from "@neondatabase/client";
 import bcrypt from "bcryptjs";
 
-export default async (req) => {
+export const handler = async (event) => {
   try {
-    const method = req.method || req.httpMethod;
-    if (method !== "POST") {
-      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
+    // Only POST allowed
+    if (event.httpMethod !== "POST") {
+      return {
+        statusCode: 405,
+        body: JSON.stringify({ error: "Method not allowed" })
+      };
     }
 
-    const { fullname, email, password } = await req.json();
+    // Parse JSON body
+    const { fullname, email, password } = JSON.parse(event.body);
 
     if (!fullname || !email || !password) {
-      return Response.json(
-        { error: "fullname, email, and password are required" },
-        { status: 400 }
-      );
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing fields" })
+      };
     }
 
-    const client = await getClient();
-
-    // Check duplicate
-    const check = await client.query(
-      "SELECT id FROM customers WHERE email = $1 LIMIT 1;",
-      [email]
-    );
-
-    if (check.rows.length > 0) {
-      await client.end();
-      return Response.json(
-        { error: "Email already registered. Please log in." },
-        { status: 409 }
-      );
+    // ENV CHECK (prevents crashes)
+    if (!process.env.NETLIFY_DATABASE_URL) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "Database URL missing",
+          details: "NETLIFY_DATABASE_URL is undefined"
+        })
+      };
     }
+
+    // Connect to Neon
+    const client = new Client(process.env.NETLIFY_DATABASE_URL);
+    await client.connect();
 
     const hash = await bcrypt.hash(password, 10);
 
-    const result = await client.query(
-      `INSERT INTO customers (fullname, email, password_hash, created_at)
-       VALUES ($1, $2, $3, NOW())
-       RETURNING id, fullname, email;`,
-      [fullname, email, hash]
-    );
+    const sql = `
+      INSERT INTO customers (fullname, email, password_hash)
+      VALUES ($1, $2, $3)
+      RETURNING id, fullname, email;
+    `;
 
-    await client.end();
+    const result = await client.query(sql, [fullname, email, hash]);
 
-    const user = result.rows[0];
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        user: result.rows[0]
+      })
+    };
 
-    return Response.json({
-      success: true,
-      message: "Customer registered successfully",
-      user: {
-        id: user.id,
-        fullname: user.fullname,
-        email: user.email
-      }
-    });
   } catch (err) {
-    console.error("CUSTOMER REGISTER ERROR:", err);
-    return Response.json(
-      { error: "Registration failed", details: err.message },
-      { status: 500 }
-    );
+    console.error("REGISTER ERROR:", err);
+
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        success: false,
+        error: "Server crashed",
+        details: err.message
+      })
+    };
   }
 };

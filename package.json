@@ -1,0 +1,8 @@
+{
+  "name": "pharmalogic-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/client": "0.10.0"
+  }
+}

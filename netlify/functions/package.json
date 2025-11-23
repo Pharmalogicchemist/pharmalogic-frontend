@@ -1,7 +1,9 @@
 {
   "name": "pharmalogic-functions",
   "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
   "dependencies": {
-    "@neondatabase/client": "^0.6.0"
+    "@neondatabase/client": "^0.10.0"
   }
 }

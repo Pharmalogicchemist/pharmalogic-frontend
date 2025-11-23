@@ -5,18 +5,25 @@ export default async (req) => {
   try {
     const method = req.method || req.httpMethod;
     if (method !== "POST") {
-      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
+      return Response.json(
+        { success: false, message: "Method Not Allowed" },
+        { status: 405 }
+      );
     }
 
     const { order_id } = await req.json();
 
     if (!order_id) {
-      return Response.json({ error: "Missing order_id" }, { status: 400 });
+      return Response.json(
+        { success: false, message: "Missing order_id" },
+        { status: 400 }
+      );
     }
 
     const rows = await sql`
-      DELETE FROM orders WHERE id = ${order_id}
-      RETURNING id;
+      DELETE FROM orders
+      WHERE id = ${order_id}
+      RETURNING id
     `;
 
     if (rows.length === 0) {
@@ -34,11 +41,7 @@ export default async (req) => {
   } catch (err) {
     console.error("DELETE ORDER ERROR:", err);
     return Response.json(
-      {
-        success: false,
-        message: "Failed to delete order",
-        details: err.message,
-      },
+      { success: false, message: "Failed to delete order", error: err.message },
       { status: 500 }
     );
   }

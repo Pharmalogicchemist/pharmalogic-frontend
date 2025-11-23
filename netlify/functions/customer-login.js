@@ -1,71 +1,88 @@
-import { getClient } from "./_db.js";
-import bcrypt from "bcryptjs";
+// netlify/functions/customer-login.js
+const crypto = require("crypto");
+const { sql } = require("./database");
 
-export default async (req) => {
+// Compare "salt:hash" format
+function verifyPassword(password, stored) {
+  const [salt, originalHash] = stored.split(":");
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 100000, 64, "sha512")
+    .toString("hex");
+  return hash === originalHash;
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ success: false, message: "Method Not Allowed" }),
+    };
+  }
+
   try {
-    const method = req.method || req.httpMethod;
-    if (method !== "POST") {
-      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
-    }
-
-    const { email, password } = await req.json();
+    const data = JSON.parse(event.body || "{}");
+    const { email, password } = data;
 
     if (!email || !password) {
-      return Response.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      );
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          success: false,
+          message: "Missing email or password",
+        }),
+      };
     }
 
-    const client = await getClient();
+    const rows = await sql`
+      SELECT id, full_name, email, password_hash
+      FROM customers
+      WHERE email = ${email}
+      LIMIT 1
+    `;
 
-    const result = await client.query(
-      `SELECT id, fullname, email, password_hash
-       FROM customers
-       WHERE email = $1
-       LIMIT 1;`,
-      [email]
-    );
-
-    if (result.rows.length === 0) {
-      await client.end();
-      return Response.json(
-        { success: false, message: "Invalid email or password" },
-        { status: 401 }
-      );
+    if (rows.length === 0) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({
+          success: false,
+          message: "Invalid email or password",
+        }),
+      };
     }
 
-    const user = result.rows[0];
-    const match = await bcrypt.compare(password, user.password_hash);
+    const customer = rows[0];
 
-    if (!match) {
-      await client.end();
-      return Response.json(
-        { success: false, message: "Invalid email or password" },
-        { status: 401 }
-      );
+    if (!verifyPassword(password, customer.password_hash)) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({
+          success: false,
+          message: "Invalid email or password",
+        }),
+      };
     }
 
-    await client.end();
-
-    return Response.json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user.id,
-        fullname: user.fullname,
-        email: user.email
-      }
-    });
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        customer_id: customer.id,
+        customer: {
+          id: customer.id,
+          full_name: customer.full_name,
+          email: customer.email,
+        },
+      }),
+    };
   } catch (err) {
-    console.error("CUSTOMER LOGIN ERROR:", err);
-    return Response.json(
-      {
+    console.error("Login error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
         success: false,
-        message: "Internal server error",
-        details: err.message
-      },
-      { status: 500 }
-    );
+        message: "Login failed",
+        error: err.message,
+      }),
+    };
   }
 };

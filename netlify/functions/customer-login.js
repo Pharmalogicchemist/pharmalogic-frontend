@@ -1,6 +1,6 @@
 // netlify/functions/customer-login.js
-const crypto = require("crypto");
-const { sql } = require("./database");
+import crypto from "crypto";
+import { sql } from "./database.js";
 
 // Compare "salt:hash" format
 function verifyPassword(password, stored) {
@@ -11,78 +11,67 @@ function verifyPassword(password, stored) {
   return hash === originalHash;
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ success: false, message: "Method Not Allowed" }),
-    };
+export default async (req) => {
+  const method = req.method || req.httpMethod;
+  if (method !== "POST") {
+    return Response.json(
+      { success: false, message: "Method Not Allowed" },
+      { status: 405 }
+    );
   }
 
   try {
-    const data = JSON.parse(event.body || "{}");
-    const { email, password } = data;
+    const data = await req.json();
+    const { email, password } = data || {};
 
     if (!email || !password) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          success: false,
-          message: "Missing email or password",
-        }),
-      };
+      return Response.json(
+        { success: false, message: "Missing email or password" },
+        { status: 400 }
+      );
     }
 
     const rows = await sql`
       SELECT id, full_name, email, password_hash
       FROM customers
       WHERE email = ${email}
-      LIMIT 1
+      LIMIT 1;
     `;
 
     if (rows.length === 0) {
-      return {
-        statusCode: 401,
-        body: JSON.stringify({
-          success: false,
-          message: "Invalid email or password",
-        }),
-      };
+      return Response.json(
+        { success: false, message: "Invalid email or password" },
+        { status: 401 }
+      );
     }
 
     const customer = rows[0];
 
     if (!verifyPassword(password, customer.password_hash)) {
-      return {
-        statusCode: 401,
-        body: JSON.stringify({
-          success: false,
-          message: "Invalid email or password",
-        }),
-      };
+      return Response.json(
+        { success: false, message: "Invalid email or password" },
+        { status: 401 }
+      );
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        customer_id: customer.id,
-        customer: {
-          id: customer.id,
-          full_name: customer.full_name,
-          email: customer.email,
-        },
-      }),
-    };
+    return Response.json({
+      success: true,
+      customer_id: customer.id,
+      customer: {
+        id: customer.id,
+        full_name: customer.full_name,
+        email: customer.email,
+      },
+    });
   } catch (err) {
     console.error("Login error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
+    return Response.json(
+      {
         success: false,
         message: "Login failed",
         error: err.message,
-      }),
-    };
+      },
+      { status: 500 }
+    );
   }
 };

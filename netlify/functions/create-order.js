@@ -5,7 +5,10 @@ export default async (req) => {
   try {
     const method = req.method || req.httpMethod;
     if (method !== "POST") {
-      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
+      return Response.json(
+        { success: false, message: "Method Not Allowed" },
+        { status: 405 }
+      );
     }
 
     const data = await req.json();
@@ -18,10 +21,11 @@ export default async (req) => {
       "medication",
       "answers",
     ];
-    for (const r of required) {
-      if (!data[r]) {
+
+    for (const field of required) {
+      if (!data[field]) {
         return Response.json(
-          { error: `Missing required field: ${r}` },
+          { success: false, message: `Missing required field: ${field}` },
           { status: 400 }
         );
       }
@@ -54,7 +58,7 @@ export default async (req) => {
         NOW(),
         NOW()
       )
-      RETURNING id, customer_id, full_name, email, medication, price, status, created_at;
+      RETURNING id, customer_id, full_name, email, medication, price, status, created_at
     `;
 
     return Response.json({
@@ -65,11 +69,7 @@ export default async (req) => {
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     return Response.json(
-      {
-        success: false,
-        message: "Internal server error",
-        details: err.message,
-      },
+      { success: false, message: "Internal server error", error: err.message },
       { status: 500 }
     );
   }

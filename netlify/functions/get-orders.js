@@ -1,51 +1,43 @@
-import { Client } from "@neondatabase/client";
+import { getClient } from "./_db.js";
+
 export default async (req) => {
   try {
-    if (req.method !== "GET") {
-      return Response.json(
-        { error: "Method Not Allowed" },
-        { status: 405 }
-      );
+    const method = req.method || req.httpMethod;
+    if (method !== "GET") {
+      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
     }
 
-    // Connect to Neon
-    const client = new Client(process.env.NETLIFY_DATABASE_URL);
-    await client.connect();
+    const client = await getClient();
 
-    // Fetch orders sorted by newest first
-    const sql = `
-      SELECT 
-        id,
-        full_name,
-        email,
-        phone,
-        address,
-        medication,
-        price,
-        order_status,
-        answers,
-        created_at
-      FROM orders
-      ORDER BY created_at DESC;
-    `;
+    const result = await client.query(
+      `SELECT 
+         id,
+         customer_id,
+         full_name,
+         email,
+         phone,
+         address,
+         medication,
+         price,
+         status,
+         answers,
+         created_at,
+         updated_at
+       FROM orders
+       ORDER BY created_at DESC;`
+    );
 
-    const result = await client.query(sql);
+    await client.end();
 
     return Response.json({
       success: true,
       count: result.rows.length,
       orders: result.rows
     });
-
   } catch (err) {
-    console.error("GET-ORDERS ERROR:", err);
-
+    console.error("GET ORDERS ERROR:", err);
     return Response.json(
-      { 
-        success: false,
-        message: "Failed to fetch orders",
-        details: err.message
-      },
+      { success: false, message: "Failed to fetch orders", details: err.message },
       { status: 500 }
     );
   }

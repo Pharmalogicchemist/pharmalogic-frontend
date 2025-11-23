@@ -1,19 +1,22 @@
 // netlify/functions/auth-login.js
-import { sql } from "./database.js";
 import bcrypt from "bcryptjs";
+import { sql } from "./database.js";
 
 export default async (req) => {
   try {
     const method = req.method || req.httpMethod;
     if (method !== "POST") {
-      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
+      return Response.json(
+        { success: false, message: "Method Not Allowed" },
+        { status: 405 }
+      );
     }
 
     const { email, password } = await req.json();
 
     if (!email || !password) {
       return Response.json(
-        { error: "Email and password are required" },
+        { success: false, message: "Email and password are required" },
         { status: 400 }
       );
     }
@@ -22,7 +25,7 @@ export default async (req) => {
       SELECT id, fullname, email, password_hash, role
       FROM auth_users
       WHERE email = ${email}
-      LIMIT 1;
+      LIMIT 1
     `;
 
     if (rows.length === 0) {
@@ -48,16 +51,11 @@ export default async (req) => {
       success: true,
       message: "Auth login successful",
       user,
-      // you can add JWT token here later
     });
   } catch (err) {
     console.error("AUTH LOGIN ERROR:", err);
     return Response.json(
-      {
-        success: false,
-        message: "Internal server error",
-        details: err.message,
-      },
+      { success: false, message: "Internal server error", error: err.message },
       { status: 500 }
     );
   }

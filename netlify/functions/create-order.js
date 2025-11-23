@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/create-order.js
+import { sql } from "./database.js";
 
 export default async (req) => {
   try {
@@ -9,7 +10,14 @@ export default async (req) => {
 
     const data = await req.json();
 
-    const required = ["customer_id", "full_name", "email", "address", "medication", "answers"];
+    const required = [
+      "customer_id",
+      "full_name",
+      "email",
+      "address",
+      "medication",
+      "answers",
+    ];
     for (const r of required) {
       if (!data[r]) {
         return Response.json(
@@ -19,10 +27,8 @@ export default async (req) => {
       }
     }
 
-    const client = await getClient();
-
-    const result = await client.query(
-      `INSERT INTO orders (
+    const rows = await sql`
+      INSERT INTO orders (
         customer_id,
         full_name,
         email,
@@ -35,31 +41,35 @@ export default async (req) => {
         created_at,
         updated_at
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',NOW(),NOW())
-      RETURNING id, customer_id, full_name, email, medication, price, status, created_at;`,
-      [
-        data.customer_id,
-        data.full_name,
-        data.email,
-        data.phone || "",
-        data.address,
-        data.medication,
-        data.price || 0,
-        JSON.stringify(data.answers)
-      ]
-    );
-
-    await client.end();
+      VALUES (
+        ${data.customer_id},
+        ${data.full_name},
+        ${data.email},
+        ${data.phone || ""},
+        ${data.address},
+        ${data.medication},
+        ${data.price || 0},
+        ${JSON.stringify(data.answers)},
+        'pending',
+        NOW(),
+        NOW()
+      )
+      RETURNING id, customer_id, full_name, email, medication, price, status, created_at;
+    `;
 
     return Response.json({
       success: true,
       message: "Order created successfully",
-      order: result.rows[0]
+      order: rows[0],
     });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     return Response.json(
-      { success: false, message: "Internal server error", details: err.message },
+      {
+        success: false,
+        message: "Internal server error",
+        details: err.message,
+      },
       { status: 500 }
     );
   }

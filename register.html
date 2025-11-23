@@ -67,11 +67,9 @@ document.getElementById("register-form").addEventListener("submit", async functi
   const confirm = document.getElementById("password_confirm").value.trim();
   const msg = document.getElementById("register-message");
 
-  // Reset message
   msg.innerText = "";
   msg.style.color = "black";
 
-  // Client-side validation
   if (!fullname || !email || !password || !confirm) {
     msg.innerText = "All fields are required.";
     msg.style.color = "red";
@@ -88,13 +86,13 @@ document.getElementById("register-form").addEventListener("submit", async functi
   msg.style.color = "black";
 
   try {
-    const res = await fetch("/api/customer-register", {
+    const res = await fetch("/.netlify/functions/customer-register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullname, email, password })
+      body: JSON.stringify({ full_name: fullname, email, password })
     });
 
-    const text = await res.text();   // to avoid JSON parsing crash
+    const text = await res.text();
     let data;
 
     try {
@@ -106,7 +104,6 @@ document.getElementById("register-form").addEventListener("submit", async functi
     }
 
     if (!res.ok) {
-      // Displays proper backend message (error or details)
       msg.innerText = data.error || data.details || "Registration failed.";
       msg.style.color = "red";
       return;

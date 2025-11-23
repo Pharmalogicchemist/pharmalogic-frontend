@@ -1,16 +1,15 @@
-import { Client } from "@neondatabase/client";
+import { getClient } from "./_db.js";
+
 export default async (req) => {
   try {
-    if (req.method !== "GET") {
-      return Response.json(
-        { error: "Method Not Allowed" },
-        { status: 405 }
-      );
+    const method = req.method || req.httpMethod;
+    if (method !== "GET") {
+      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
     }
 
     const url = new URL(req.url);
     const customer_id = url.searchParams.get("customer_id");
-    const email = url.searchParams.get("email"); // optional fallback
+    const email = url.searchParams.get("email");
 
     if (!customer_id && !email) {
       return Response.json(
@@ -19,11 +18,9 @@ export default async (req) => {
       );
     }
 
-    const client = new Client(process.env.NETLIFY_DATABASE_URL);
-    await client.connect();
+    const client = await getClient();
 
     let sql, params;
-
     if (customer_id) {
       sql = `
         SELECT 
@@ -35,9 +32,10 @@ export default async (req) => {
           address,
           medication,
           price,
-          order_status,
+          status,
           answers,
-          created_at
+          created_at,
+          updated_at
         FROM orders
         WHERE customer_id = $1
         ORDER BY created_at DESC;
@@ -54,9 +52,10 @@ export default async (req) => {
           address,
           medication,
           price,
-          order_status,
+          status,
           answers,
-          created_at
+          created_at,
+          updated_at
         FROM orders
         WHERE email = $1
         ORDER BY created_at DESC;
@@ -65,6 +64,7 @@ export default async (req) => {
     }
 
     const result = await client.query(sql, params);
+    await client.end();
 
     return Response.json({
       success: true,
@@ -73,10 +73,8 @@ export default async (req) => {
       count: result.rows.length,
       orders: result.rows
     });
-
   } catch (err) {
     console.error("GET ORDERS BY CUSTOMER ERROR:", err);
-
     return Response.json(
       {
         success: false,

@@ -1,5 +1,4 @@
-import { Client } from "@neondatabase/serverless";
-
+import { Client } from "@neondatabase/client";
 export default async (req) => {
   try {
     // Allow only POST

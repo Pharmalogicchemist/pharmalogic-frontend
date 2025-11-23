@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/update-order.js
+import { sql } from "./database.js";
 
 export default async (req) => {
   try {
@@ -17,39 +18,35 @@ export default async (req) => {
       return Response.json({ error: "Missing status" }, { status: 400 });
     }
 
-    const client = await getClient();
+    const existing = await sql`
+      SELECT id FROM orders WHERE id = ${order_id} LIMIT 1;
+    `;
 
-    // Check exist
-    const check = await client.query(
-      "SELECT id FROM orders WHERE id = $1 LIMIT 1;",
-      [order_id]
-    );
-
-    if (check.rows.length === 0) {
-      await client.end();
+    if (existing.length === 0) {
       return Response.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const result = await client.query(
-      `UPDATE orders
-       SET status = $1,
-           updated_at = NOW()
-       WHERE id = $2
-       RETURNING id, status, updated_at;`,
-      [status, order_id]
-    );
-
-    await client.end();
+    const rows = await sql`
+      UPDATE orders
+      SET status = ${status},
+          updated_at = NOW()
+      WHERE id = ${order_id}
+      RETURNING id, status, updated_at;
+    `;
 
     return Response.json({
       success: true,
       message: "Order updated successfully",
-      order: result.rows[0]
+      order: rows[0],
     });
   } catch (err) {
     console.error("UPDATE ORDER ERROR:", err);
     return Response.json(
-      { success: false, message: "Failed to update order", details: err.message },
+      {
+        success: false,
+        message: "Failed to update order",
+        details: err.message,
+      },
       { status: 500 }
     );
   }

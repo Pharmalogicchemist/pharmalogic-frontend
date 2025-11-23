@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/auth-register.js
+import { sql } from "./database.js";
 import bcrypt from "bcryptjs";
 
 export default async (req) => {
@@ -17,16 +18,12 @@ export default async (req) => {
       );
     }
 
-    const client = await getClient();
-
     // Check duplicate
-    const check = await client.query(
-      "SELECT id FROM auth_users WHERE email = $1 LIMIT 1;",
-      [email]
-    );
+    const existing = await sql`
+      SELECT id FROM auth_users WHERE email = ${email} LIMIT 1;
+    `;
 
-    if (check.rows.length > 0) {
-      await client.end();
+    if (existing.length > 0) {
       return Response.json(
         { error: "Email already registered. Please log in." },
         { status: 409 }
@@ -35,24 +32,25 @@ export default async (req) => {
 
     const hash = await bcrypt.hash(password, 10);
 
-    const result = await client.query(
-      `INSERT INTO auth_users (fullname, email, password_hash, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, fullname, email, role;`,
-      [fullname, email, hash, role]
-    );
-
-    await client.end();
+    const rows = await sql`
+      INSERT INTO auth_users (fullname, email, password_hash, role)
+      VALUES (${fullname}, ${email}, ${hash}, ${role})
+      RETURNING id, fullname, email, role;
+    `;
 
     return Response.json({
       success: true,
       message: "Auth user registered successfully",
-      user: result.rows[0]
+      user: rows[0],
     });
   } catch (err) {
     console.error("AUTH REGISTER ERROR:", err);
     return Response.json(
-      { success: false, message: "Registration failed", details: err.message },
+      {
+        success: false,
+        message: "Registration failed",
+        details: err.message,
+      },
       { status: 500 }
     );
   }

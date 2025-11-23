@@ -1,4 +1,3 @@
-// netlify/functions/update-order.js
 import { sql } from "./database.js";
 
 export default async (req) => {
@@ -14,12 +13,12 @@ export default async (req) => {
       return Response.json({ error: "Missing order_id" }, { status: 400 });
     }
 
-    if (!status || status.length === 0) {
+    if (!status) {
       return Response.json({ error: "Missing status" }, { status: 400 });
     }
 
     const existing = await sql`
-      SELECT id FROM orders WHERE id = ${order_id} LIMIT 1;
+      SELECT id FROM orders WHERE id = ${order_id};
     `;
 
     if (existing.length === 0) {
@@ -27,9 +26,7 @@ export default async (req) => {
     }
 
     const rows = await sql`
-      UPDATE orders
-      SET status = ${status},
-          updated_at = NOW()
+      UPDATE orders SET status = ${status}, updated_at = NOW()
       WHERE id = ${order_id}
       RETURNING id, status, updated_at;
     `;

@@ -1,4 +1,3 @@
-// netlify/functions/get-orders.js
 import { sql } from "./database.js";
 
 export default async (req) => {
@@ -10,18 +9,9 @@ export default async (req) => {
 
     const rows = await sql`
       SELECT 
-        id,
-        customer_id,
-        full_name,
-        email,
-        phone,
-        address,
-        medication,
-        price,
-        status,
-        answers,
-        created_at,
-        updated_at
+        id, customer_id, full_name, email,
+        phone, address, medication, price,
+        status, answers, created_at, updated_at
       FROM orders
       ORDER BY created_at DESC;
     `;

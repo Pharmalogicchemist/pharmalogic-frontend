@@ -1,11 +1,11 @@
-// netlify/functions/database.js
 import { neon } from "@neondatabase/client";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString =
+  process.env.NETLIFY_DATABASE_URL ||
+  process.env.NETLIFY_DATABASE_URL_UNPOOLED;
+
 if (!connectionString) {
-  console.error("DATABASE_URL is not set in environment variables");
-  throw new Error("DATABASE_URL is missing");
+  throw new Error("Database connection string missing");
 }
 
-// Neon returns a tagged template function
 export const sql = neon(connectionString);

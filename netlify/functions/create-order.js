@@ -1,19 +1,17 @@
-import { Client } from "@neondatabase/client";
+import { getClient } from "./_db.js";
+
 export default async (req) => {
   try {
-    if (req.method !== "POST") {
-      return Response.json(
-        { error: "Method Not Allowed" },
-        { status: 405 }
-      );
+    const method = req.method || req.httpMethod;
+    if (method !== "POST") {
+      return Response.json({ error: "Method Not Allowed" }, { status: 405 });
     }
 
     const data = await req.json();
 
-    // Required fields
-    const required = ["full_name", "email", "address", "medication", "answers"];
-    for (let r of required) {
-      if (!data[r] || data[r].length === 0) {
+    const required = ["customer_id", "full_name", "email", "address", "medication", "answers"];
+    for (const r of required) {
+      if (!data[r]) {
         return Response.json(
           { error: `Missing required field: ${r}` },
           { status: 400 }
@@ -21,12 +19,11 @@ export default async (req) => {
       }
     }
 
-    // Connect to NEON DB
-    const client = new Client(process.env.NETLIFY_DATABASE_URL);
-    await client.connect();
+    const client = await getClient();
 
-    const sql = `
-      INSERT INTO orders (
+    const result = await client.query(
+      `INSERT INTO orders (
+        customer_id,
         full_name,
         email,
         phone,
@@ -34,37 +31,35 @@ export default async (req) => {
         medication,
         price,
         answers,
-        order_status,
-        created_at
+        status,
+        created_at,
+        updated_at
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8, NOW())
-      RETURNING id, full_name, email, medication, price, order_status, created_at;
-    `;
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',NOW(),NOW())
+      RETURNING id, customer_id, full_name, email, medication, price, status, created_at;`,
+      [
+        data.customer_id,
+        data.full_name,
+        data.email,
+        data.phone || "",
+        data.address,
+        data.medication,
+        data.price || 0,
+        JSON.stringify(data.answers)
+      ]
+    );
 
-    const params = [
-      data.full_name,
-      data.email,
-      data.phone || "",
-      data.address,
-      data.medication,
-      data.price || 0,
-      JSON.stringify(data.answers),
-      "pending"
-    ];
-
-    const result = await client.query(sql, params);
+    await client.end();
 
     return Response.json({
       success: true,
       message: "Order created successfully",
       order: result.rows[0]
     });
-
   } catch (err) {
-    console.error("Create Order Error:", err);
-
+    console.error("CREATE ORDER ERROR:", err);
     return Response.json(
-      { error: "Internal Server Error", details: err.message },
+      { success: false, message: "Internal server error", details: err.message },
       { status: 500 }
     );
   }

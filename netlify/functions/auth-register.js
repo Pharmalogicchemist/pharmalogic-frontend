@@ -1,4 +1,4 @@
-import { Client } from "@neondatabase/serverless";
+import { Client } from "@neondatabase/client";
 import bcrypt from "bcryptjs";
 
 export default async (req) => {

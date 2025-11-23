@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/get-orders-by-customer.js
+import { sql } from "./database.js";
 
 export default async (req) => {
   try {
@@ -18,11 +19,9 @@ export default async (req) => {
       );
     }
 
-    const client = await getClient();
-
-    let sql, params;
+    let orders;
     if (customer_id) {
-      sql = `
+      orders = await sql`
         SELECT 
           id,
           customer_id,
@@ -37,12 +36,11 @@ export default async (req) => {
           created_at,
           updated_at
         FROM orders
-        WHERE customer_id = $1
+        WHERE customer_id = ${customer_id}
         ORDER BY created_at DESC;
       `;
-      params = [customer_id];
     } else {
-      sql = `
+      orders = await sql`
         SELECT 
           id,
           customer_id,
@@ -57,21 +55,17 @@ export default async (req) => {
           created_at,
           updated_at
         FROM orders
-        WHERE email = $1
+        WHERE email = ${email}
         ORDER BY created_at DESC;
       `;
-      params = [email];
     }
-
-    const result = await client.query(sql, params);
-    await client.end();
 
     return Response.json({
       success: true,
       customer_id: customer_id || null,
       email: email || null,
-      count: result.rows.length,
-      orders: result.rows
+      count: orders.length,
+      orders,
     });
   } catch (err) {
     console.error("GET ORDERS BY CUSTOMER ERROR:", err);
@@ -79,7 +73,7 @@ export default async (req) => {
       {
         success: false,
         message: "Failed to fetch customer orders",
-        details: err.message
+        details: err.message,
       },
       { status: 500 }
     );

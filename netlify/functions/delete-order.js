@@ -1,4 +1,5 @@
-import { getClient } from "./_db.js";
+// netlify/functions/delete-order.js
+import { sql } from "./database.js";
 
 export default async (req) => {
   try {
@@ -13,16 +14,12 @@ export default async (req) => {
       return Response.json({ error: "Missing order_id" }, { status: 400 });
     }
 
-    const client = await getClient();
+    const rows = await sql`
+      DELETE FROM orders WHERE id = ${order_id}
+      RETURNING id;
+    `;
 
-    const result = await client.query(
-      "DELETE FROM orders WHERE id = $1 RETURNING id;",
-      [order_id]
-    );
-
-    await client.end();
-
-    if (result.rowCount === 0) {
+    if (rows.length === 0) {
       return Response.json(
         { success: false, message: "Order not found" },
         { status: 404 }
@@ -32,12 +29,16 @@ export default async (req) => {
     return Response.json({
       success: true,
       message: "Order deleted successfully",
-      order_id
+      order_id,
     });
   } catch (err) {
     console.error("DELETE ORDER ERROR:", err);
     return Response.json(
-      { success: false, message: "Failed to delete order", details: err.message },
+      {
+        success: false,
+        message: "Failed to delete order",
+        details: err.message,
+      },
       { status: 500 }
     );
   }

@@ -14,9 +14,9 @@ export default async (req) => {
       return Response.json({ success: false, message: "Missing order_id" }, { status: 400 });
     }
 
-    // Get order info
+    // Fetch order
     const rows = await sql`
-      SELECT id, full_name, email, medication, price 
+      SELECT id, full_name, email, medication, price
       FROM orders WHERE id = ${order_id}
     `;
 
@@ -25,16 +25,15 @@ export default async (req) => {
     }
 
     const order = rows[0];
-
-    // PRICE must be in pennies
     const amount = Number(order.price) * 100;
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       mode: "payment",
+      payment_method_types: ["card"],
       customer_email: order.email,
+
       line_items: [
         {
           price_data: {
@@ -47,20 +46,21 @@ export default async (req) => {
           quantity: 1,
         },
       ],
-      success_url: "https://pharmalogic-weightlossmedication.com/order-success.html?order_id=" + order_id,
-      cancel_url: "https://pharmalogic-weightlossmedication.com/order-failed.html?order_id=" + order_id,
+
+      success_url: `https://pharmalogic-weightlossmedication.com/order-success.html?order_id=${order_id}`,
+      cancel_url: `https://pharmalogic-weightlossmedication.com/order-failed.html?order_id=${order_id}`
     });
 
     return Response.json({
       success: true,
       sessionId: session.id,
-      publicKey: process.env.STRIPE_PUBLIC_KEY,
+      publicKey: process.env.STRIPE_PUBLIC_KEY
     });
 
   } catch (err) {
-    console.error("Stripe session error:", err);
+    console.error("Checkout error:", err);
     return Response.json(
-      { success: false, message: err.message },
+      { success: false, message: "Stripe error", error: err.message },
       { status: 500 }
     );
   }

@@ -9,7 +9,7 @@
     "start": "echo 'Opening local project'"
   },
   "dependencies": {
-    "@neondatabase/client": "0.10.0",
+    "@neondatabase/client": "0.9.4",
     "stripe": "^16.0.0",
     "bcryptjs": "2.4.3"
   }

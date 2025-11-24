@@ -1,0 +1,16 @@
+{
+  "name": "pharmalogic-frontend",
+  "version": "1.0.0",
+  "description": "PharmaLogic Frontend with Netlify Serverless Functions",
+  "main": "index.html",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "start": "echo 'Opening local project'"
+  },
+  "dependencies": {
+    "@neondatabase/client": "0.10.0",
+    "stripe": "^16.0.0",
+    "bcryptjs": "2.4.3"
+  }
+}

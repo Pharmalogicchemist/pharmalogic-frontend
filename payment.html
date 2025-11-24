@@ -2,115 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pharmalogic - Mounjaro weight loss Injection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pharmalogic - Complete Payment</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+
   <style>
     body {
+      background: #f8f9fa;
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f4f4f4;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    h1, h2 {
-      color: #333;
-    }
-    button {
-      background-color: #1a73e8;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-    form input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      box-sizing: border-box;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Buy Mounjaro 2.5mg Weight Loss Injection</h1>
-    <p><strong>Price:</strong> £125.00 (Monthly Pack)</p>
-    <p>Mounjaro weight loss injection is a fast-acting monthly weight loss solution. Recommended by certified pharmacists and clinically tested.</p>
 
-    <hr />
+<body class="p-6">
 
-    <h2>Submit Your Info</h2>
-    <p>(For prescription and follow-up communication)</p>
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h1 class="text-3xl font-bold text-green-800 mb-4 text-center">
+      Complete Your Payment
+    </h1>
 
-    <form id="customer-form">
-      <input type="text" name="full_name" placeholder="Full Name" required />
-      <input type="email" name="email" placeholder="Email Address" required />
-      <button type="submit">Submit Info & Buy Now</button>
-    </form>
+    <p id="status-message" class="text-center text-lg text-gray-700 mb-4">
+      Loading order details...
+    </p>
 
-    <p id="form-response" style="margin-top:1rem;"></p>
+    <!-- Order Summary Section -->
+    <div id="order-summary" class="hidden">
+      <h2 class="text-2xl font-semibold mt-4 mb-2 text-gray-800">Order Summary</h2>
+
+      <div class="p-4 border rounded bg-gray-50">
+        <p><strong>Order ID:</strong> <span id="order-id"></span></p>
+        <p><strong>Name:</strong> <span id="patient-name"></span></p>
+        <p><strong>Email:</strong> <span id="billing-email"></span></p>
+        <p><strong>Phone:</strong> <span id="billing-phone"></span></p>
+        <p><strong>Address:</strong> <span id="billing-address"></span></p>
+
+        <hr class="my-3" />
+
+        <p><strong>Mounjaro Strength:</strong> <span id="strength"></span></p>
+        <p><strong>Total Price:</strong> £<span id="price"></span></p>
+
+        <p class="mt-3">
+          <strong>Order Status:</strong> 
+          <span id="order-status" class="font-semibold"></span>
+        </p>
+      </div>
+
+      <div class="text-center mt-6">
+        <button id="pay-now-btn"
+          class="bg-green-700 text-white px-6 py-3 text-lg rounded-lg hover:bg-green-800">
+          Proceed to Secure Payment
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/****************************************************
+   1) Read order_id from URL
+*****************************************************/
+const urlParams = new URLSearchParams(window.location.search);
+const orderId = urlParams.get("order_id");
 
-  <script>
-    // ✅ Your Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4RMS3cZEcwcxmEK2mfCH6uS9fP_uz3-A",
-      authDomain: "pharmalogic-weightloss-cfbf2.firebaseapp.com",
-      projectId: "pharmalogic-weightloss-cfbf2",
-      storageBucket: "pharmalogic-weightloss-cfbf2.appspot.com",
-      messagingSenderId: "508838130812",
-      appId: "1:508838130812:web:09888169609b9b361245f9"
+if (!orderId) {
+  document.getElementById("status-message").innerText =
+    "❌ Invalid URL. Order ID missing.";
+}
+
+/****************************************************
+   2) Fetch order details from backend
+*****************************************************/
+async function loadOrder() {
+  try {
+    const res = await fetch(`/api/get-order?order_id=${orderId}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      document.getElementById("status-message").innerText =
+        "❌ Unable to load order details.";
+      return;
+    }
+
+    const order = data.order;
+
+    // Fill UI with order details
+    document.getElementById("order-id").innerText = orderId;
+    document.getElementById("patient-name").innerText = order.patient_name;
+    document.getElementById("billing-email").innerText = order.billing_email;
+    document.getElementById("billing-phone").innerText = order.billing_phone;
+    document.getElementById("billing-address").innerText =
+      `${order.billing_address_1}, ${order.billing_city}, ${order.billing_postcode}`;
+    document.getElementById("strength").innerText = order.mounjaro_strength;
+
+    // FIXED PRICE TABLE
+    const priceMap = {
+      "2.5mg": 125,
+      "5mg": 145,
+      "7.5mg": 165,
+      "10mg": 185,
+      "12.5mg": 195,
+      "15mg": 205
     };
 
-    // ✅ Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const price = priceMap[order.mounjaro_strength] || 125;
+    document.getElementById("price").innerText = price;
 
-    const form = document.getElementById('customer-form');
-    const responseText = document.getElementById('form-response');
+    document.getElementById("order-status").innerText = order.order_status;
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    document.getElementById("status-message").classList.add("hidden");
+    document.getElementById("order-summary").classList.remove("hidden");
 
-      const fullName = form.full_name.value.trim();
-      const email = form.email.value.trim();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    document.getElementById("status-message").innerText =
+      "❌ Server error while loading order.";
+  }
+}
 
-      if (!fullName || !email) {
-        responseText.innerText = "❌ Please fill in all fields.";
-        responseText.style.color = "red";
-        return;
-      }
+loadOrder();
 
-      try {
-        await db.collection('customers').add({
-          full_name: fullName,
-          email: email,
-          submitted_at: new Date()
-        });
-
-        responseText.innerText = "✅ Info submitted! Redirecting to payment...";
-        responseText.style.color = "green";
-
-        setTimeout(() => {
-          window.location.href = "https://buy.stripe.com/test_14A00lcfU1gH7b838k3cc00";
-        }, 1500);
-      } catch (error) {
-        console.error("Firestore Error:", error);
-        responseText.innerText = "❌ Error saving data. Please try again.";
-        responseText.style.color = "red";
-      }
+/****************************************************
+   3) Create Stripe checkout session using backend
+*****************************************************/
+document.getElementById("pay-now-btn").addEventListener("click", async () => {
+  try {
+    const res = await fetch("/api/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: orderId })
     });
-  </script>
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("Payment error: " + data.message);
+      return;
+    }
+
+    const stripe = Stripe(data.publicKey);
+
+    // Redirect to Stripe secure hosted checkout
+    await stripe.redirectToCheckout({ sessionId: data.sessionId });
+
+  } catch (err) {
+    console.error("Stripe error:", err);
+    alert("Payment service error.");
+  }
+});
+</script>
+
 </body>
 </html>

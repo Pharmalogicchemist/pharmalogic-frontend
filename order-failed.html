@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payment Failed - Pharmalogic</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; }
+  </style>
+</head>
+<body>
+
+<h1 style="color: red;">❌ Payment Failed</h1>
+<p>Something went wrong. Your order is saved and we can assist you.</p>
+
+<h3>Your Order ID:</h3>
+<p id="order"></p>
+
+<p>Please call us for help completing your payment.</p>
+
+<a href="index.html"><button>Return Home</button></a>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  document.getElementById("order").innerText = params.get("order_id");
+</script>
+
+</body>
+</html>

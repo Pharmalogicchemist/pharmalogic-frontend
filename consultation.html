@@ -169,20 +169,22 @@
     </form>
   </div>
 
-
-  <!-- ===============================
-       WORKING BACKEND INTEGRATION
-  ================================ -->
+<!-- ===============================
+     MAIN SCRIPT
+================================ -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /**  🔐 CHECK LOGIN STATUS FIRST  **/
-  const customerId = localStorage.getItem("customer_id");
+  /** 🔓 AUTO-GENERATE OR USE EXISTING CUSTOMER ID **/
+  let customerId = localStorage.getItem("customer_id");
+
+  // If customer not logged in → generate guest ID
   if (!customerId) {
-    alert("Please login before starting your consultation.");
-    window.location.href = "login.html";
-    return;
+    customerId = "guest_" + Math.random().toString(36).substring(2, 12);
+    localStorage.setItem("customer_id", customerId);
   }
+
+  console.log("Customer ID:", customerId);
 
   const form = document.getElementById('consultation-form');
   const step1 = document.getElementById('step-1');
@@ -260,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const bmi = calculateBMI();
     if (bmi === null || bmi < 27) {
-      alert('Your BMI is below 27. You cannot proceed.');
+      alert('Your BMI must be 27 or above to proceed.');
       return;
     }
 
@@ -338,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    /**  🔥 ADD CUSTOMER ID TO ORDER  **/
+    /** MUST ALWAYS SEND CUSTOMER ID (GUEST OR LOGGED-IN) **/
     payload.customer_id = customerId;
 
     try {

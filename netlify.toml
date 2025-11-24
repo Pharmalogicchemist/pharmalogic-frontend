@@ -1,11 +1,14 @@
-{
-  "name": "pharmalogic-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@neondatabase/client": "0.10.0",
-    "stripe": "^16.0.0",
-    "bcryptjs": "2.4.3"
-  }
-}
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[functions]
+  node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

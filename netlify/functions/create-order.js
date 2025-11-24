@@ -25,12 +25,31 @@ export default async (req) => {
     for (const field of required) {
       if (!data[field]) {
         return Response.json(
-          { success: false, message: `Missing required field: ${field}` },
+          {
+            success: false,
+            message: `Missing required field: ${field}`,
+          },
           { status: 400 }
         );
       }
     }
 
+    // ✅ FIX: Safely convert answers object to text
+    let answersText = "";
+    try {
+      answersText = JSON.stringify(data.answers);
+    } catch (err) {
+      console.error("Error serializing answers:", err);
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid answers format",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Insert order safely
     const rows = await sql`
       INSERT INTO orders (
         customer_id,
@@ -53,12 +72,12 @@ export default async (req) => {
         ${data.address},
         ${data.medication},
         ${data.price || 0},
-        ${JSON.stringify(data.answers)},
+        ${answersText},
         'pending',
         NOW(),
         NOW()
       )
-      RETURNING id, customer_id, full_name, email, medication, price, status, created_at
+      RETURNING id, customer_id, full_name, email, medication, price, status, created_at;
     `;
 
     return Response.json({
@@ -69,7 +88,11 @@ export default async (req) => {
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
     return Response.json(
-      { success: false, message: "Internal server error", error: err.message },
+      {
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      },
       { status: 500 }
     );
   }

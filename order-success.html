@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Order Successful - Pharmalogic</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; }
+  </style>
+</head>
+<body>
+
+<h1 style="color: green;">🎉 Payment Successful!</h1>
+<p>Your order has been successfully paid.</p>
+
+<h3>Your Order ID:</h3>
+<p id="order"></p>
+
+<a href="index.html">
+  <button>Return to Homepage</button>
+</a>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  document.getElementById("order").innerText = params.get("order_id");
+</script>
+
+</body>
+</html>

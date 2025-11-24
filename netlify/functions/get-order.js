@@ -1,20 +1,26 @@
-// netlify/functions/get-order.js
 import { sql } from "./database.js";
 
 export default async (req) => {
   try {
-    const orderId = req.query.order_id || req.query["order_id"];
-
-    if (!orderId) {
-      return Response.json({ success: false, message: "order_id missing" });
+    const order_id = req.queryStringParameters.order_id;
+    if (!order_id) {
+      return Response.json(
+        { success: false, message: "Missing order_id" },
+        { status: 400 }
+      );
     }
 
     const rows = await sql`
-      SELECT * FROM orders WHERE order_id = ${orderId} LIMIT 1;
+      SELECT *
+      FROM orders
+      WHERE id = ${order_id}
     `;
 
     if (rows.length === 0) {
-      return Response.json({ success: false, message: "Order not found" });
+      return Response.json(
+        { success: false, message: "Order not found" },
+        { status: 404 }
+      );
     }
 
     return Response.json({
@@ -23,7 +29,9 @@ export default async (req) => {
     });
 
   } catch (err) {
-    console.error("❌ Error fetching order:", err);
-    return Response.json({ success: false, message: "Server error" });
+    return Response.json(
+      { success: false, message: "Server error", error: err.message },
+      { status: 500 }
+    );
   }
 };

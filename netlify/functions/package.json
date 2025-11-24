@@ -1,8 +1,7 @@
 {
-  "name": "pharmalogic-frontend",
+  "name": "pharmalogic-functions",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "dependencies": {
     "@neondatabase/client": "0.10.0",
     "stripe": "^16.0.0",

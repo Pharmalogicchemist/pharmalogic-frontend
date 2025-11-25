@@ -1,11 +1,11 @@
-// netlify/functions/customer-login.js
+// netlify/functions/customer-register.js
 import crypto from "crypto";
 import { sql } from "./database.js";
 
-function verifyPassword(password, savedHash) {
-  const [salt, hash] = savedHash.split(":");
-  const hashed = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
-  return hashed === hash;
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
+  return `${salt}:${hash}`;
 }
 
 export default async (req) => {
@@ -14,42 +14,35 @@ export default async (req) => {
       return Response.json({ success: false, message: "Method not allowed" }, { status: 405 });
     }
 
-    const { email, password } = await req.json();
+    const { name, email, mobile, password } = await req.json();
 
-    if (!email || !password) {
-      return Response.json({ success: false, message: "Missing fields" });
+    if (!name || !email || !mobile || !password) {
+      return Response.json({ success: false, message: "Missing required fields" });
     }
 
-    const users = await sql`
-      SELECT id, password_hash
-      FROM customers
-      WHERE email = ${email}
-      LIMIT 1
+    // Check if already exists
+    const existing = await sql`
+      SELECT id FROM customers WHERE email = ${email} LIMIT 1
     `;
-
-    if (users.length === 0) {
-      return Response.json({
-        success: false,
-        message: "Invalid email or password"
-      });
+    if (existing.length > 0) {
+      return Response.json({ success: false, message: "Email already registered" });
     }
 
-    const user = users[0];
+    const passwordHash = hashPassword(password);
 
-    if (!verifyPassword(password, user.password_hash)) {
-      return Response.json({
-        success: false,
-        message: "Invalid email or password"
-      });
-    }
+    const rows = await sql`
+      INSERT INTO customers (name, email, mobile, password_hash)
+      VALUES (${name}, ${email}, ${mobile}, ${passwordHash})
+      RETURNING id
+    `;
 
     return Response.json({
       success: true,
-      customer_id: user.id,
-      message: "Login successful"
+      customer_id: rows[0].id,
+      message: "Registration successful"
     });
 
   } catch (err) {
-    return Response.json({ success: false, message: err.message }, { status: 500 });
+    return Response.json({ success: false, message: err.message });
   }
 };

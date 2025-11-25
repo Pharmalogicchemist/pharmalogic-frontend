@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PharmaLogic - Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3/dist/tailwind.min.css" />
+
+  <style>
+    body { background-color: #f8fafc; }
+    .status-paid { color: green; font-weight: bold; }
+    .status-pending { color: orange; font-weight: bold; }
+    .status-failed { color: red; font-weight: bold; }
+  </style>
+</head>
+
+<body class="p-6">
+  <h1 class="text-3xl font-bold mb-6">PharmaLogic – Orders Dashboard</h1>
+
+  <div id="ordersContainer" class="bg-white shadow p-6 rounded-lg">
+    <h2 class="text-2xl font-semibold mb-4">Recent Orders</h2>
+    <table class="min-w-full border">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="p-3 border">Order ID</th>
+          <th class="p-3 border">Customer Name</th>
+          <th class="p-3 border">Mobile</th>
+          <th class="p-3 border">Address</th>
+          <th class="p-3 border">Payment Status</th>
+          <th class="p-3 border">Amount</th>
+          <th class="p-3 border">Date</th>
+          <th class="p-3 border">View</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadOrders() {
+      const res = await fetch("/api/get-orders");
+      const data = await res.json();
+
+      if (!data.success) {
+        alert("Failed to load orders");
+        return;
+      }
+
+      const tbody = document.getElementById("ordersTable");
+      tbody.innerHTML = "";
+
+      data.orders.forEach(order => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="p-3 border">${order.order_id}</td>
+          <td class="p-3 border">${order.customer_name}</td>
+          <td class="p-3 border">${order.customer_mobile}</td>
+          <td class="p-3 border">${order.customer_address}</td>
+          <td class="p-3 border status-${order.payment_status}">
+            ${order.payment_status.toUpperCase()}
+          </td>
+          <td class="p-3 border">£${order.total_amount || "0.00"}</td>
+          <td class="p-3 border">${new Date(order.created_at).toLocaleString()}</td>
+          <td class="p-3 border">
+            <a class="text-blue-600 underline" href="order-details.html?id=${order.order_id}">
+              View
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

@@ -1,66 +1,55 @@
 // netlify/functions/customer-login.js
-const bcrypt = require("bcryptjs");
-const { sql } = require("./database.js");
+import crypto from "crypto";
+import { sql } from "./database.js";
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: false, message: "Method not allowed" })
-    };
-  }
+function verifyPassword(password, savedHash) {
+  const [salt, hash] = savedHash.split(":");
+  const hashed = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
+  return hashed === hash;
+}
 
+export default async (req) => {
   try {
-    const body = JSON.parse(event.body || "{}");
-    const { mobile, password } = body;
-
-    if (!mobile || !password) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Mobile and password required" })
-      };
+    if ((req.method || req.httpMethod) !== "POST") {
+      return Response.json({ success: false, message: "Method not allowed" }, { status: 405 });
     }
 
-    const rows = await sql`
-      SELECT id, name, email, mobile, address, password_hash
+    const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return Response.json({ success: false, message: "Missing fields" });
+    }
+
+    const users = await sql`
+      SELECT id, password_hash
       FROM customers
-      WHERE mobile = ${mobile}
+      WHERE email = ${email}
       LIMIT 1
     `;
 
-    if (rows.length === 0) {
-      return {
-        statusCode: 401,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Invalid credentials" })
-      };
+    if (users.length === 0) {
+      return Response.json({
+        success: false,
+        message: "Invalid email or password"
+      });
     }
 
-    const customer = rows[0];
-    const match = await bcrypt.compare(password, customer.password_hash || "");
-    if (!match) {
-      return {
-        statusCode: 401,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Invalid credentials" })
-      };
+    const user = users[0];
+
+    if (!verifyPassword(password, user.password_hash)) {
+      return Response.json({
+        success: false,
+        message: "Invalid email or password"
+      });
     }
 
-    delete customer.password_hash;
+    return Response.json({
+      success: true,
+      customer_id: user.id,
+      message: "Login successful"
+    });
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: true, customer })
-    };
   } catch (err) {
-    console.error("customer-login error:", err);
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: false, message: "Server error" })
-    };
+    return Response.json({ success: false, message: err.message }, { status: 500 });
   }
 };

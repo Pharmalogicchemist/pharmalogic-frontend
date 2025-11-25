@@ -21,7 +21,7 @@ export default async (req) => {
       });
     }
 
-    /** 🔥 Ensure Stripe is configured in Netlify ENV */
+    /** Ensure Stripe keys exist */
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const publicKey = process.env.STRIPE_PUBLIC_KEY;
 
@@ -34,9 +34,11 @@ export default async (req) => {
 
     const stripe = new Stripe(secretKey);
 
-    // Get the order details
+    // Fetch order
     const orders = await sql`
-      SELECT * FROM orders WHERE id = ${order_id}
+      SELECT * FROM orders
+      WHERE id = ${order_id}
+      LIMIT 1
     `;
 
     if (orders.length === 0) {
@@ -48,10 +50,20 @@ export default async (req) => {
 
     const order = orders[0];
 
-    // Create Stripe Checkout session
+    // ⭐ FIX: use correct column total_amount
+    const amount = Number(order.total_amount);
+
+    if (!amount || isNaN(amount)) {
+      return Response.json({
+        success: false,
+        message: "Invalid price in order: " + order.total_amount,
+      });
+    }
+
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       mode: "payment",
+      payment_method_types: ["card"],
       success_url: `https://pharmalogic-weightlossmedication.com/order-success.html?order_id=${order_id}`,
       cancel_url: `https://pharmalogic-weightlossmedication.com/order-failed.html?order_id=${order_id}`,
       line_items: [
@@ -59,9 +71,10 @@ export default async (req) => {
           price_data: {
             currency: "gbp",
             product_data: {
-              name: order.mounjaro_strength + " Mounjaro",
+              name: `${order.mounjaro_strength} Mounjaro`,
             },
-            unit_amount: Math.round(order.total_price * 100),
+            // ⭐ FIX: Convert to Stripe integer
+            unit_amount: Math.round(amount * 100),
           },
           quantity: 1,
         },

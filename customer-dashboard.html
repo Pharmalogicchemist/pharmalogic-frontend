@@ -2,736 +2,223 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Customer Portal - PharmaLogic</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px 25px 30px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-    h1, h2, h3 {
-      margin-top: 0;
-      color: #1c2a4a;
-    }
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .tabs button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #e3e7f3;
-      color: #1c2a4a;
-      font-weight: 600;
-    }
-    .tabs button.active {
-      background: #2c5cff;
-      color: #fff;
-    }
-    .section {
-      display: none;
-      margin-top: 10px;
-    }
-    .section.active {
-      display: block;
-    }
-    label {
-      display: block;
-      margin: 8px 0 4px;
-      font-size: 0.9rem;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccd2e3;
-      box-sizing: border-box;
-      font-size: 0.95rem;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-    .row > div {
-      flex: 1;
-    }
-    button.primary {
-      margin-top: 12px;
-      padding: 10px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: #2c5cff;
-      color: #fff;
-      font-weight: 600;
-    }
-    button.secondary {
-      margin-top: 12px;
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid #d0d4e4;
-      background: #fff;
-      cursor: pointer;
-    }
-    button.danger {
-      margin-top: 12px;
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      background: #d9534f;
-      color: #fff;
-      cursor: pointer;
-    }
-    .status {
-      margin-top: 8px;
-      font-size: 0.9rem;
-    }
-    .status.ok {
-      color: #198754;
-    }
-    .status.error {
-      color: #d9534f;
-    }
-    .orders-list {
-      margin-top: 10px;
-      border-top: 1px solid #e1e4f0;
-      padding-top: 10px;
-    }
-    .order-card {
-      border: 1px solid #e1e4f0;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #fafbff;
-      font-size: 0.9rem;
-    }
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 600;
-    }
-    .badge {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      text-transform: capitalize;
-    }
-    .badge.pending { background: #fff3cd; color: #856404; }
-    .badge.approved { background: #d4edda; color: #155724; }
-    .badge.rejected { background: #f8d7da; color: #721c24; }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .muted {
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
-    .flex-right {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    @media (max-width: 640px) {
-      .row { flex-direction: column; }
-      .top-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Dashboard - PharmaLogic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>PharmaLogic - Customer Portal</h1>
-    <p class="muted">
-      Register, log in, manage your profile, view your orders, and reset your password.
-    </p>
 
-    <!-- AUTH VIEW -->
-    <div id="auth-view">
-      <div class="tabs">
-        <button id="tab-login" class="active">Login</button>
-        <button id="tab-register">Register</button>
-      </div>
+<body class="bg-gray-100">
 
-      <!-- LOGIN SECTION -->
-      <div id="section-login" class="section active">
-        <h2>Customer Login</h2>
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" placeholder="you@example.com" />
+<!-- HEADER -->
+<div class="bg-green-900 text-white px-6 py-4 flex justify-between items-center shadow">
+  <h1 class="text-xl font-bold">PharmaLogic Dashboard</h1>
+  <button id="logoutBtn" class="bg-white text-blue-900 font-semibold px-4 py-1 rounded hover:bg-gray-200">
+    Logout
+  </button>
+</div>
 
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" placeholder="********" />
+<!-- MAIN CONTAINER -->
+<div class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded">
 
-        <button class="primary" id="btn-login">Login</button>
-        <div id="login-status" class="status"></div>
+  <h2 class="text-3xl font-bold text-blue-800 text-center mb-6">
+    Welcome, <span id="customerName">Customer</span>
+  </h2>
 
-        <h3 style="margin-top:20px;">Forgot Password?</h3>
-        <p class="muted">Request an OTP to your email and then reset your password.</p>
+  <!-- Stats Section -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-        <label for="fp-email">Email for OTP</label>
-        <input type="email" id="fp-email" placeholder="you@example.com" />
-        <button class="secondary" id="btn-request-otp">Request OTP</button>
-        <div id="otp-request-status" class="status"></div>
-
-        <h3 style="margin-top:15px;">Reset Password via OTP</h3>
-        <label for="fp-otp">OTP Code</label>
-        <input type="text" id="fp-otp" placeholder="Enter OTP" />
-
-        <label for="fp-newpass">New Password</label>
-        <input type="password" id="fp-newpass" placeholder="New password" />
-
-        <button class="primary" id="btn-reset-password">Reset Password</button>
-        <div id="reset-status" class="status"></div>
-      </div>
-
-      <!-- REGISTER SECTION -->
-      <div id="section-register" class="section">
-        <h2>Create Account</h2>
-
-        <label for="reg-fullname">Full Name</label>
-        <input type="text" id="reg-fullname" placeholder="Your full name" />
-
-        <label for="reg-email">Email</label>
-        <input type="email" id="reg-email" placeholder="you@example.com" />
-
-        <label for="reg-password">Password</label>
-        <input type="password" id="reg-password" placeholder="********" />
-
-        <button class="primary" id="btn-register">Register</button>
-        <div id="register-status" class="status"></div>
-      </div>
+    <div class="bg-blue-100 p-4 rounded shadow text-center">
+      <p class="text-gray-700 font-semibold">Total Orders</p>
+      <p id="totalOrders" class="text-3xl font-bold text-blue-900">0</p>
     </div>
 
-    <!-- DASHBOARD VIEW -->
-    <div id="dashboard-view" style="display:none;">
-      <div class="top-bar">
-        <div>
-          <h2>Welcome, <span id="db-name"></span></h2>
-          <div class="muted">
-            Logged in as <span id="db-email"></span>
-          </div>
-        </div>
-        <div class="flex-right">
-          <button class="secondary" id="btn-refresh-orders">Refresh Orders</button>
-          <button class="secondary" id="btn-logout">Logout</button>
-        </div>
-      </div>
+    <div class="bg-green-100 p-4 rounded shadow text-center">
+      <p class="text-gray-700 font-semibold">Total Spent (£)</p>
+      <p id="totalSpent" class="text-3xl font-bold text-green-900">0</p>
+    </div>
 
-      <hr />
+    <div class="bg-yellow-100 p-4 rounded shadow text-center">
+      <p class="text-gray-700 font-semibold">Pending Payments</p>
+      <p id="pendingCount" class="text-3xl font-bold text-yellow-900">0</p>
+    </div>
 
-      <!-- ORDERS -->
-      <section>
-        <h3>Your Orders</h3>
-        <p class="muted">View and manage your orders.</p>
-        <div id="orders-status" class="status"></div>
-        <div id="orders-list" class="orders-list"></div>
-      </section>
+  </div>
 
-      <hr />
+  <!-- ORDERS LIST -->
+  <h3 class="text-2xl font-bold mb-4">Your Orders</h3>
 
-      <!-- PROFILE UPDATE -->
-      <section>
-        <h3>Update Profile</h3>
-        <p class="muted">Change your name or email. (Requires backend endpoint /api/update-customer-profile)</p>
+  <div id="ordersList" class="space-y-4"></div>
 
-        <label for="profile-fullname">Full Name</label>
-        <input type="text" id="profile-fullname" />
+  <!-- ORDER DETAILS MODAL -->
+  <div id="orderModal"
+       class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
 
-        <label for="profile-email">Email</label>
-        <input type="email" id="profile-email" />
+    <div class="bg-white w-full max-w-3xl rounded p-6 relative shadow-lg max-h-[90vh] overflow-y-auto">
 
-        <button class="primary" id="btn-update-profile">Save Changes</button>
-        <div id="profile-status" class="status"></div>
-      </section>
+      <button id="closeModal" class="absolute top-3 right-3 text-red-600 text-lg font-bold">X</button>
 
-      <hr />
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Order Details</h2>
 
-      <!-- DELETE ACCOUNT -->
-      <section>
-        <h3>Delete Account</h3>
-        <p class="muted">
-          This will permanently delete your account and (optionally) your orders. Requires backend endpoint /api/delete-customer.
-        </p>
-        <button class="danger" id="btn-delete-account">Delete My Account</button>
-        <div id="delete-status" class="status"></div>
-      </section>
+      <div id="orderDetails" class="mb-6 text-sm"></div>
+
+      <h3 class="text-xl font-semibold mb-2">Uploaded Files</h3>
+      <div id="orderFiles" class="space-y-3"></div>
+
     </div>
   </div>
 
-  <script>
-    // === TABS ===
-    const tabLogin = document.getElementById("tab-login");
-    const tabRegister = document.getElementById("tab-register");
-    const sectionLogin = document.getElementById("section-login");
-    const sectionRegister = document.getElementById("section-register");
+</div>
 
-    tabLogin.addEventListener("click", () => {
-      tabLogin.classList.add("active");
-      tabRegister.classList.remove("active");
-      sectionLogin.classList.add("active");
-      sectionRegister.classList.remove("active");
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const customerId = localStorage.getItem("customer_id");
+
+  if (!customerId) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Logout button
+  document.getElementById("logoutBtn").onclick = () => {
+    localStorage.removeItem("customer_id");
+    window.location.href = "index.html";
+  };
+
+  // Fetch orders for logged-in customer
+  const res = await fetch("/api/get-orders-by-customer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customer_id: customerId })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert("Unable to load dashboard");
+    return;
+  }
+
+  const orders = data.orders;
+  const customerInfo = data.customer;
+
+  document.getElementById("customerName").textContent =
+    customerInfo?.name || "Customer";
+
+  // Update Stats
+  document.getElementById("totalOrders").textContent = orders.length;
+
+  let totalSpent = 0;
+  let pendingCount = 0;
+
+  orders.forEach(o => {
+    if (o.payment_status === "paid") totalSpent += Number(o.total_amount || 0);
+    if (o.payment_status === "pending") pendingCount++;
+  });
+
+  document.getElementById("totalSpent").textContent = totalSpent.toFixed(2);
+  document.getElementById("pendingCount").textContent = pendingCount;
+
+  // Render orders list
+  const ordersList = document.getElementById("ordersList");
+
+  orders.forEach(order => {
+    const div = document.createElement("div");
+    div.className = "border p-4 rounded shadow-sm bg-gray-50";
+
+    div.innerHTML = `
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-semibold">Order ID: ${order.id}</p>
+          <p>Date: ${new Date(order.created_at).toLocaleDateString()}</p>
+          <p>Status: <span class="font-bold ${order.payment_status === "paid" ? "text-green-700" : "text-red-700"}">
+            ${order.payment_status}
+          </span></p>
+          <p>Total: £${order.total_amount}</p>
+        </div>
+
+        <div class="space-x-2">
+          <button class="viewDetails bg-blue-600 text-white px-3 py-1 rounded"
+                  data-id="${order.id}">
+            View Details
+          </button>
+
+          <a href="payment.html?order_id=${order.id}"
+             class="bg-green-700 text-white px-3 py-1 rounded">
+            Pay Now
+          </a>
+        </div>
+      </div>
+    `;
+
+    ordersList.appendChild(div);
+  });
+
+  // Modal handling
+  const modal = document.getElementById("orderModal");
+  const closeModal = document.getElementById("closeModal");
+
+  closeModal.onclick = () => modal.classList.add("hidden");
+
+  // Handle View Details click
+  document.querySelectorAll(".viewDetails").forEach(btn => {
+    btn.addEventListener("click", async () => {
+
+      const orderId = btn.dataset.id;
+
+      const r = await fetch("/api/get-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId })
+      });
+
+      const info = await r.json();
+
+      if (!info.success) return alert("Error loading order details");
+
+      const order = info.order;
+      const files = info.files;
+
+      // Show modal
+      modal.classList.remove("hidden");
+
+      // Build consultation details
+      let html = "<div class='space-y-1'>";
+      for (let key in order.consultation_data) {
+        html += `<p><strong>${key.replace(/_/g," ")}:</strong> ${order.consultation_data[key]}</p>`;
+      }
+      html += "</div>";
+
+      document.getElementById("orderDetails").innerHTML = html;
+
+      // Files Section
+      const fileDiv = document.getElementById("orderFiles");
+      fileDiv.innerHTML = "";
+
+      files.forEach(f => {
+        let element;
+
+        if (f.file_url.startsWith("data:video")) {
+          element = `<video controls class="w-full rounded"><source src="${f.file_url}"></video>`;
+        } else if (f.file_url.startsWith("data:image")) {
+          element = `<img src="${f.file_url}" class="w-full rounded shadow">`;
+        } else {
+          element = `<a href="${f.file_url}" target="_blank" class="text-blue-700 underline">View File</a>`;
+        }
+
+        fileDiv.innerHTML += `
+          <div class="border p-2 rounded bg-gray-100">
+            <p class="font-semibold mb-1">${f.file_type}</p>
+            ${element}
+          </div>
+        `;
+      });
+
     });
+  });
 
-    tabRegister.addEventListener("click", () => {
-      tabRegister.classList.add("active");
-      tabLogin.classList.remove("active");
-      sectionRegister.classList.add("active");
-      sectionLogin.classList.remove("active");
-    });
+});
+</script>
 
-    // === VIEWS ===
-    const authView = document.getElementById("auth-view");
-    const dashboardView = document.getElementById("dashboard-view");
-
-    function showDashboard() {
-      authView.style.display = "none";
-      dashboardView.style.display = "block";
-
-      const name = localStorage.getItem("customer_name") || "";
-      const email = localStorage.getItem("customer_email") || "";
-
-      document.getElementById("db-name").textContent = name;
-      document.getElementById("db-email").textContent = email;
-
-      // Prefill profile fields
-      document.getElementById("profile-fullname").value = name;
-      document.getElementById("profile-email").value = email;
-
-      loadOrders();
-    }
-
-    function showAuth() {
-      authView.style.display = "block";
-      dashboardView.style.display = "none";
-    }
-
-    // On load: if logged in, show dashboard
-    window.addEventListener("DOMContentLoaded", () => {
-      const cid = localStorage.getItem("customer_id");
-      if (cid) {
-        showDashboard();
-      } else {
-        showAuth();
-      }
-    });
-
-    // Helper: get auth headers (JWT)
-    function getAuthHeaders() {
-      const token = localStorage.getItem("token");
-      const headers = { "Content-Type": "application/json" };
-      if (token) {
-        headers["Authorization"] = "Bearer " + token;
-      }
-      return headers;
-    }
-
-    // === REGISTER ===
-    const btnRegister = document.getElementById("btn-register");
-    const regStatus = document.getElementById("register-status");
-
-    btnRegister.addEventListener("click", async () => {
-      regStatus.textContent = "";
-      regStatus.className = "status";
-
-      const fullname = document.getElementById("reg-fullname").value.trim();
-      const email = document.getElementById("reg-email").value.trim();
-      const password = document.getElementById("reg-password").value;
-
-      if (!fullname || !email || !password) {
-        regStatus.textContent = "Please fill all fields.";
-        regStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/customer-register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fullname, email, password })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          regStatus.textContent = data.error || "Registration failed.";
-          regStatus.classList.add("error");
-          return;
-        }
-
-        // Save user in localStorage
-        localStorage.setItem("customer_id", data.user.id);
-        localStorage.setItem("customer_name", data.user.fullname);
-        localStorage.setItem("customer_email", data.user.email);
-
-        regStatus.textContent = "Registration successful! Redirecting...";
-        regStatus.classList.add("ok");
-
-        setTimeout(showDashboard, 800);
-      } catch (err) {
-        console.error(err);
-        regStatus.textContent = "Registration failed. Try again.";
-        regStatus.classList.add("error");
-      }
-    });
-
-    // === LOGIN ===
-    const btnLogin = document.getElementById("btn-login");
-    const loginStatus = document.getElementById("login-status");
-
-    btnLogin.addEventListener("click", async () => {
-      loginStatus.textContent = "";
-      loginStatus.className = "status";
-
-      const email = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
-
-      if (!email || !password) {
-        loginStatus.textContent = "Please enter email and password.";
-        loginStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/customer-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          loginStatus.textContent = data.message || data.error || "Login failed.";
-          loginStatus.classList.add("error");
-          return;
-        }
-
-        // Save user
-        localStorage.setItem("customer_id", data.user.id);
-        localStorage.setItem("customer_name", data.user.fullname);
-        localStorage.setItem("customer_email", data.user.email);
-
-        // Save tokens if backend provides them
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
-        if (data.refreshToken) {
-          localStorage.setItem("refreshToken", data.refreshToken);
-        }
-
-        loginStatus.textContent = "Login successful! Redirecting...";
-        loginStatus.classList.add("ok");
-
-        setTimeout(showDashboard, 800);
-      } catch (err) {
-        console.error(err);
-        loginStatus.textContent = "Login failed. Try again.";
-        loginStatus.classList.add("error");
-      }
-    });
-
-    // === LOGOUT ===
-    const btnLogout = document.getElementById("btn-logout");
-    btnLogout.addEventListener("click", () => {
-      localStorage.removeItem("customer_id");
-      localStorage.removeItem("customer_name");
-      localStorage.removeItem("customer_email");
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      showAuth();
-    });
-
-    // === ORDERS ===
-    const ordersStatus = document.getElementById("orders-status");
-    const ordersList = document.getElementById("orders-list");
-    const btnRefreshOrders = document.getElementById("btn-refresh-orders");
-
-    async function loadOrders() {
-      ordersStatus.textContent = "Loading orders...";
-      ordersStatus.className = "status";
-      ordersList.innerHTML = "";
-
-      const customerId = localStorage.getItem("customer_id");
-      if (!customerId) {
-        ordersStatus.textContent = "No customer ID found. Please log in again.";
-        ordersStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/get-orders-by-customer?customer_id=${encodeURIComponent(customerId)}`, {
-          method: "GET",
-          headers: getAuthHeaders()
-        });
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          ordersStatus.textContent = data.message || data.error || "Failed to load orders.";
-          ordersStatus.classList.add("error");
-          return;
-        }
-
-        ordersStatus.textContent = `Found ${data.count} order(s).`;
-        ordersStatus.classList.add("ok");
-
-        if (!data.orders || data.orders.length === 0) {
-          ordersList.innerHTML = "<p class='muted'>You have no orders yet.</p>";
-          return;
-        }
-
-        data.orders.forEach(order => {
-          const div = document.createElement("div");
-          div.className = "order-card";
-
-          const statusClass = order.order_status === "approved"
-            ? "approved"
-            : order.order_status === "rejected"
-            ? "rejected"
-            : "pending";
-
-          div.innerHTML = `
-            <div class="order-header">
-              <span>Order #${order.id}</span>
-              <span class="badge ${statusClass}">${order.order_status || "pending"}</span>
-            </div>
-            <div><strong>Medication:</strong> ${order.medication || ""}</div>
-            <div><strong>Price:</strong> £${order.price || 0}</div>
-            <div><strong>Created:</strong> ${order.created_at || ""}</div>
-            <button class="secondary" data-id="${order.id}">Delete Order</button>
-          `;
-
-          const deleteBtn = div.querySelector("button");
-          deleteBtn.addEventListener("click", () => deleteOrder(order.id));
-
-          ordersList.appendChild(div);
-        });
-      } catch (err) {
-        console.error(err);
-        ordersStatus.textContent = "Error loading orders.";
-        ordersStatus.classList.add("error");
-      }
-    }
-
-    async function deleteOrder(orderId) {
-      if (!confirm("Are you sure you want to delete this order?")) return;
-
-      try {
-        const res = await fetch("/api/delete-order", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ order_id: orderId })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          alert(data.message || "Failed to delete order.");
-          return;
-        }
-
-        alert("Order deleted.");
-        loadOrders();
-      } catch (err) {
-        console.error(err);
-        alert("Error deleting order.");
-      }
-    }
-
-    btnRefreshOrders.addEventListener("click", loadOrders);
-
-    // === PROFILE UPDATE ===
-    const btnUpdateProfile = document.getElementById("btn-update-profile");
-    const profileStatus = document.getElementById("profile-status");
-
-    btnUpdateProfile.addEventListener("click", async () => {
-      profileStatus.textContent = "";
-      profileStatus.className = "status";
-
-      const fullname = document.getElementById("profile-fullname").value.trim();
-      const email = document.getElementById("profile-email").value.trim();
-      const customerId = localStorage.getItem("customer_id");
-
-      if (!customerId) {
-        profileStatus.textContent = "No customer ID. Please log in again.";
-        profileStatus.classList.add("error");
-        return;
-      }
-      if (!fullname || !email) {
-        profileStatus.textContent = "Full name and email are required.";
-        profileStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/update-customer-profile", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ id: customerId, fullname, email })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          profileStatus.textContent = data.message || data.error || "Failed to update profile.";
-          profileStatus.classList.add("error");
-          return;
-        }
-
-        // Update localStorage
-        localStorage.setItem("customer_name", fullname);
-        localStorage.setItem("customer_email", email);
-
-        document.getElementById("db-name").textContent = fullname;
-        document.getElementById("db-email").textContent = email;
-
-        profileStatus.textContent = "Profile updated successfully.";
-        profileStatus.classList.add("ok");
-      } catch (err) {
-        console.error(err);
-        profileStatus.textContent = "Error updating profile.";
-        profileStatus.classList.add("error");
-      }
-    });
-
-    // === DELETE ACCOUNT ===
-    const btnDeleteAccount = document.getElementById("btn-delete-account");
-    const deleteStatus = document.getElementById("delete-status");
-
-    btnDeleteAccount.addEventListener("click", async () => {
-      deleteStatus.textContent = "";
-      deleteStatus.className = "status";
-
-      const customerId = localStorage.getItem("customer_id");
-      if (!customerId) {
-        deleteStatus.textContent = "No customer ID. Please log in again.";
-        deleteStatus.classList.add("error");
-        return;
-      }
-
-      if (!confirm("This will permanently delete your account. Continue?")) return;
-
-      try {
-        const res = await fetch("/api/delete-customer", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ id: customerId })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          deleteStatus.textContent = data.message || "Failed to delete account.";
-          deleteStatus.classList.add("error");
-          return;
-        }
-
-        deleteStatus.textContent = "Account deleted. Logging you out...";
-        deleteStatus.classList.add("ok");
-
-        setTimeout(() => {
-          localStorage.clear();
-          showAuth();
-        }, 1200);
-      } catch (err) {
-        console.error(err);
-        deleteStatus.textContent = "Error deleting account.";
-        deleteStatus.classList.add("error");
-      }
-    });
-
-    // === PASSWORD RESET: REQUEST OTP ===
-    const btnRequestOtp = document.getElementById("btn-request-otp");
-    const otpRequestStatus = document.getElementById("otp-request-status");
-
-    btnRequestOtp.addEventListener("click", async () => {
-      otpRequestStatus.textContent = "";
-      otpRequestStatus.className = "status";
-
-      const email = document.getElementById("fp-email").value.trim();
-      if (!email) {
-        otpRequestStatus.textContent = "Please enter your email.";
-        otpRequestStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/request-password-reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          otpRequestStatus.textContent = data.message || data.error || "Failed to request OTP.";
-          otpRequestStatus.classList.add("error");
-          return;
-        }
-
-        otpRequestStatus.textContent = "OTP sent to your email (if registered).";
-        otpRequestStatus.classList.add("ok");
-      } catch (err) {
-        console.error(err);
-        otpRequestStatus.textContent = "Error requesting OTP.";
-        otpRequestStatus.classList.add("error");
-      }
-    });
-
-    // === PASSWORD RESET: USE OTP ===
-    const btnResetPassword = document.getElementById("btn-reset-password");
-    const resetStatus = document.getElementById("reset-status");
-
-    btnResetPassword.addEventListener("click", async () => {
-      resetStatus.textContent = "";
-      resetStatus.className = "status";
-
-      const email = document.getElementById("fp-email").value.trim();
-      const otp = document.getElementById("fp-otp").value.trim();
-      const newPassword = document.getElementById("fp-newpass").value;
-
-      if (!email || !otp || !newPassword) {
-        resetStatus.textContent = "Email, OTP, and new password are required.";
-        resetStatus.classList.add("error");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/reset-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp, new_password: newPassword })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          resetStatus.textContent = data.message || data.error || "Failed to reset password.";
-          resetStatus.classList.add("error");
-          return;
-        }
-
-        resetStatus.textContent = "Password reset successfully. You can now log in.";
-        resetStatus.classList.add("ok");
-      } catch (err) {
-        console.error(err);
-        resetStatus.textContent = "Error resetting password.";
-        resetStatus.classList.add("error");
-      }
-    });
-  </script>
 </body>
 </html>

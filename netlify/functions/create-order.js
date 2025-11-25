@@ -2,11 +2,7 @@
 const { sql } = require("./database.js");
 
 /**
- * This function:
- * 1. Saves/updates the customer in `customers` table
- * 2. Creates a new row in `orders` with consultation JSON
- * 3. Saves any uploaded files (as data URLs) into `order_files`
- * 4. Returns { success: true, order_id }
+ * Creates an order + customer + stores consultation files.
  */
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -20,7 +16,7 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
 
-    // 1) Extract patient & billing details from your existing form fields
+    // REQUIRED FIELDS
     const patientName = body.patient_name;
     const dob = body.dob;
     const mounjaroStrength = body.mounjaro_strength;
@@ -28,7 +24,7 @@ exports.handler = async (event) => {
     const email = body.billing_email;
     const address = `${body.billing_address_1 || ""}, ${body.billing_city || ""}, ${body.billing_postcode || ""}`.trim();
 
-    if (!patientName || !mobile || !address) {
+    if (!patientName || !mobile || !address || !mounjaroStrength) {
       return {
         statusCode: 400,
         headers: { "Content-Type": "application/json" },
@@ -36,26 +32,45 @@ exports.handler = async (event) => {
       };
     }
 
-    // 2) Separate file fields from the consultation JSON
+    // ⭐ PRICE TABLE (editable)
+    const prices = {
+      "2.5mg": 179,
+      "5mg": 199,
+      "7.5mg": 219,
+      "10mg": 229,
+      "12.5mg": 239,
+      "15mg": 249
+    };
+
+    const totalAmount = prices[mounjaroStrength] || null;
+
+    if (!totalAmount) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ success: false, message: "Invalid Mounjaro strength price" })
+      };
+    }
+
+    // Extract files from body
     const fileFields = ["proof_of_id", "previous_prescription", "video_upload"];
     const filesToStore = [];
 
     fileFields.forEach((key) => {
       if (body[key]) {
         filesToStore.push({
-          file_url: body[key], // data URL from frontend
+          file_url: body[key],
           file_type: key
         });
         delete body[key];
       }
     });
 
-    // This is the full consultation data we’ll store as JSONB
-    const consultationData = body;
+    const consultationData = body; // JSONB data
 
-    // 3) Upsert customer by mobile
     await sql`BEGIN`;
 
+    // ======= UPSERT CUSTOMER =======
     let customerId;
     const existing = await sql`
       SELECT id FROM customers
@@ -66,6 +81,7 @@ exports.handler = async (event) => {
 
     if (existing.length > 0) {
       customerId = existing[0].id;
+
       await sql`
         UPDATE customers
         SET name = ${patientName},
@@ -82,15 +98,16 @@ exports.handler = async (event) => {
       customerId = inserted[0].id;
     }
 
-    // 4) Insert order (payment_status initially 'pending')
+    // ======= INSERT ORDER WITH CORRECT total_amount =======
     const orders = await sql`
       INSERT INTO orders (customer_id, payment_status, total_amount, consultation_data)
-      VALUES (${customerId}, 'pending', NULL, ${consultationData})
+      VALUES (${customerId}, 'pending', ${totalAmount}, ${consultationData})
       RETURNING id, created_at
     `;
+
     const orderId = orders[0].id;
 
-    // 5) Store files (if any) in order_files
+    // ======= INSERT UPLOADED FILES =======
     for (const f of filesToStore) {
       await sql`
         INSERT INTO order_files (order_id, file_url, file_type)
@@ -105,14 +122,15 @@ exports.handler = async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         success: true,
-        order_id: orderId
+        order_id: orderId,
+        total_amount: totalAmount
       })
     };
+
   } catch (err) {
     console.error("create-order error:", err);
-    try {
-      await sql`ROLLBACK`;
-    } catch (_) {}
+    try { await sql`ROLLBACK`; } catch (_) {}
+
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,13 +19,17 @@
 
   <!-- FORM -->
   <div class="max-w-4xl mx-auto p-6 bg-white shadow-md mt-10 rounded-lg">
-    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">Start Consultation & Payment</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">
+      Start Consultation & Payment
+    </h1>
 
     <form id="consultation-form">
 
       <!-- STEP 1 -->
       <fieldset id="step-1">
-        <legend class="font-bold mb-4 text-xl text-gray-700">Patient Consultation & Medical History</legend>
+        <legend class="font-bold mb-4 text-xl text-gray-700">
+          Patient Consultation & Medical History
+        </legend>
 
         <label class="block mb-3">Full Name*:
           <input type="text" name="patient_name" required class="border p-2 w-full rounded" />
@@ -34,7 +39,7 @@
           <input type="date" name="dob" required class="border p-2 w-full rounded" />
         </label>
 
-        <label class="block mb-3">Are you on mounjaro or not?*:
+        <label class="block mb-3">Are you on Mounjaro?*:
           <select name="on_mounjaro" required class="border p-2 w-full rounded">
             <option value="">Select...</option>
             <option value="Yes">Yes</option>
@@ -62,7 +67,7 @@
           </select>
         </label>
 
-        <label class="block mb-3">Are you currently pregnant/breastfeeding?*
+        <label class="block mb-3">Are you pregnant/breastfeeding?*
           <select name="pregnancy" required class="border p-2 w-full rounded">
             <option value="">Select...</option>
             <option value="No">No</option>
@@ -96,6 +101,7 @@
           </select>
         </label>
 
+        <!-- Conditional Uploads -->
         <div id="proof-id" class="mb-4 hidden">
           <label class="block mb-2 font-semibold">Upload Valid Proof of ID</label>
           <input type="file" name="proof_of_id" class="w-full" />
@@ -169,201 +175,166 @@
     </form>
   </div>
 
-<!-- ===============================
-     MAIN SCRIPT
-================================ -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+  <!-- ===============================
+       SCRIPT
+      ================================= -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
 
-  /** 🔓 AUTO-GENERATE OR USE EXISTING CUSTOMER ID **/
-  let customerId = localStorage.getItem("customer_id");
-
-  // If customer not logged in → generate guest ID
-  if (!customerId) {
-    customerId = "guest_" + Math.random().toString(36).substring(2, 12);
-    localStorage.setItem("customer_id", customerId);
-  }
-
-  console.log("Customer ID:", customerId);
-
-  const form = document.getElementById('consultation-form');
-  const step1 = document.getElementById('step-1');
-  const step2 = document.getElementById('step-2');
-  const step3 = document.getElementById('step-3');
-
-  const toStep2Btn = document.getElementById('to-step-2');
-  const toStep3Btn = document.getElementById('to-step-3');
-  const backToStep1Btn = document.getElementById('back-to-step-1');
-  const backToStep2Btn = document.getElementById('back-to-step-2');
-
-  const phoneInput = document.getElementById('billing-phone');
-  const phoneError = document.getElementById('billing-phone-error');
-
-  const weightInput = document.getElementById('weight');
-  const heightInput = document.getElementById('height');
-  const bmiInput = document.getElementById('bmi');
-
-  const mounjaroStrengthSelect = document.getElementById('mounjaro_strength');
-  const proofIdDiv = document.getElementById('proof-id');
-  const prescriptionDiv = document.getElementById('prescription-div');
-  const videoDiv = document.getElementById('video-div');
-
-  function scrollTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function validatePhone() {
-    const valid = /^\+44\d{10}$/.test(phoneInput.value.trim());
-    phoneInput.setCustomValidity(valid ? '' : 'Invalid');
-    phoneError.classList.toggle('hidden', valid);
-    return valid;
-  }
-
-  function calculateBMI() {
-    const w = parseFloat(weightInput.value);
-    const h = parseFloat(heightInput.value);
-    if (!w || !h || h <= 0) {
-      bmiInput.value = '';
-      return null;
-    }
-    const bmi = w / ((h / 100) ** 2);
-    bmiInput.value = bmi.toFixed(1);
-    return bmi;
-  }
-
-  weightInput.addEventListener('input', calculateBMI);
-  heightInput.addEventListener('input', calculateBMI);
-
-  mounjaroStrengthSelect.addEventListener('change', () => {
-    const val = mounjaroStrengthSelect.value;
-    if (val === '2.5mg') {
-      proofIdDiv.classList.remove('hidden');
-      videoDiv.classList.remove('hidden');
-      prescriptionDiv.classList.add('hidden');
-    } else if (val) {
-      proofIdDiv.classList.remove('hidden');
-      prescriptionDiv.classList.remove('hidden');
-      videoDiv.classList.remove('hidden');
-    } else {
-      proofIdDiv.classList.add('hidden');
-      prescriptionDiv.classList.add('hidden');
-      videoDiv.classList.add('hidden');
-    }
-  });
-
-  toStep2Btn.addEventListener('click', () => {
-    const inputs = step1.querySelectorAll('input, select');
-    for (let input of inputs) {
-      if (!input.checkValidity()) {
-        input.reportValidity();
-        return;
+      /** CUSTOMER ID **/
+      let customerId = localStorage.getItem("customer_id");
+      if (!customerId) {
+        customerId = "guest_" + Math.random().toString(36).substring(2, 12);
+        localStorage.setItem("customer_id", customerId);
       }
-    }
 
-    const bmi = calculateBMI();
-    if (bmi === null || bmi < 27) {
-      alert('Your BMI must be 27 or above to proceed.');
-      return;
-    }
+      const form = document.getElementById("consultation-form");
+      const step1 = document.getElementById("step-1");
+      const step2 = document.getElementById("step-2");
+      const step3 = document.getElementById("step-3");
 
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
-    scrollTop();
-  });
+      const mounjaroStrengthSelect = document.getElementById("mounjaro_strength");
+      const proofIdDiv = document.getElementById("proof-id");
+      const prescriptionDiv = document.getElementById("prescription-div");
+      const videoDiv = document.getElementById("video-div");
 
-  toStep3Btn.addEventListener('click', () => {
-    if (!validatePhone()) {
-      phoneInput.reportValidity();
-      return;
-    }
+      const phoneInput = document.getElementById("billing-phone");
+      const phoneError = document.getElementById("billing-phone-error");
 
-    const inputs = step2.querySelectorAll('input, select');
-    for (let input of inputs) {
-      if (!input.checkValidity()) {
-        input.reportValidity();
-        return;
+      function validatePhone() {
+        const valid = /^\+44\d{10}$/.test(phoneInput.value.trim());
+        phoneError.classList.toggle("hidden", valid);
+        return valid;
       }
-    }
 
-    populateReview();
-    step2.classList.add('hidden');
-    step3.classList.remove('hidden');
-    scrollTop();
-  });
+      function calculateBMI() {
+        const w = parseFloat(document.getElementById("weight").value);
+        const h = parseFloat(document.getElementById("height").value);
 
-  backToStep1Btn.addEventListener('click', () => {
-    step2.classList.add('hidden');
-    step1.classList.remove('hidden');
-    scrollTop();
-  });
-
-  backToStep2Btn.addEventListener('click', () => {
-    step3.classList.add('hidden');
-    step2.classList.remove('hidden');
-    scrollTop();
-  });
-
-  function populateReview() {
-    const summary = document.getElementById('review-summary');
-    const data = new FormData(form);
-
-    let html = '<h3 class="font-semibold mb-2">Review Your Details</h3><ul class="list-disc pl-5 space-y-1">';
-    for (let [key, val] of data.entries()) {
-      if (!val || ["proof_of_id", "previous_prescription", "video_upload"].includes(key)) continue;
-      html += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${val}</li>`;
-    }
-    html += '</ul>';
-
-    summary.innerHTML = html;
-  }
-
-  /** 🔥 SUBMIT TO BACKEND **/
-  document.getElementById('pay-button').addEventListener('click', async function () {
-
-    const formData = new FormData(form);
-    const payload = {};
-
-    async function toBase64(file) {
-      if (!file) return null;
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        if (value.size > 0) payload[key] = await toBase64(value);
-      } else {
-        payload[key] = value;
+        if (w && h) {
+          const bmi = w / ((h / 100) ** 2);
+          document.getElementById("bmi").value = bmi.toFixed(1);
+          return bmi;
+        }
+        return null;
       }
-    }
 
-    /** MUST ALWAYS SEND CUSTOMER ID (GUEST OR LOGGED-IN) **/
-    payload.customer_id = customerId;
+      document.getElementById("weight").addEventListener("input", calculateBMI);
+      document.getElementById("height").addEventListener("input", calculateBMI);
 
-    try {
-      const res = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+      mounjaroStrengthSelect.addEventListener("change", () => {
+        const v = mounjaroStrengthSelect.value;
+        if (!v) {
+          proofIdDiv.classList.add("hidden");
+          prescriptionDiv.classList.add("hidden");
+          videoDiv.classList.add("hidden");
+          return;
+        }
+
+        proofIdDiv.classList.remove("hidden");
+        videoDiv.classList.remove("hidden");
+
+        if (v === "2.5mg") {
+          prescriptionDiv.classList.add("hidden");
+        } else {
+          prescriptionDiv.classList.remove("hidden");
+        }
       });
 
-      const data = await res.json();
+      /** STEP LOGIC **/
+      document.getElementById("to-step-2").addEventListener("click", () => {
+        const bmi = calculateBMI();
+        if (!bmi || bmi < 27) {
+          alert("Your BMI must be 27 or above.");
+          return;
+        }
 
-      if (data.success) {
-        window.location.href = "payment.html?order_id=" + data.order_id;
-      } else {
-        alert("Submission error: " + (data.message || "Unknown error"));
+        step1.classList.add("hidden");
+        step2.classList.remove("hidden");
+      });
+
+      document.getElementById("to-step-3").addEventListener("click", () => {
+        if (!validatePhone()) {
+          alert("Invalid phone number format.");
+          return;
+        }
+
+        populateReview();
+        step2.classList.add("hidden");
+        step3.classList.remove("hidden");
+      });
+
+      document.getElementById("back-to-step-1").addEventListener("click", () => {
+        step2.classList.add("hidden");
+        step1.classList.remove("hidden");
+      });
+
+      document.getElementById("back-to-step-2").addEventListener("click", () => {
+        step3.classList.add("hidden");
+        step2.classList.remove("hidden");
+      });
+
+
+      function populateReview() {
+        const summary = document.getElementById("review-summary");
+        const data = new FormData(form);
+
+        let html = `<h3 class="font-semibold mb-2">Review Your Details</h3><ul class="list-disc pl-5 space-y-1">`;
+        for (let [key, val] of data.entries()) {
+          if (!val || ["proof_of_id", "previous_prescription", "video_upload"].includes(key)) continue;
+          html += `<li><strong>${key.replace(/_/g, " ")}:</strong> ${val}</li>`;
+        }
+        html += "</ul>";
+
+        summary.innerHTML = html;
       }
-    } catch (err) {
-      alert("Server error: " + err);
-    }
-  });
 
-});
-</script>
+      /** SUBMIT CONSULTATION **/
+      document.getElementById("pay-button").addEventListener("click", async () => {
+
+        const formData = new FormData(form);
+        const payload = {};
+
+        async function fileToBase64(file) {
+          return new Promise((res) => {
+            const reader = new FileReader();
+            reader.onloadend = () => res(reader.result);
+            reader.readAsDataURL(file);
+          });
+        }
+
+        for (const [key, val] of formData.entries()) {
+          if (val instanceof File && val.size > 0) {
+            payload[key] = await fileToBase64(val);
+          } else {
+            payload[key] = val;
+          }
+        }
+
+        payload.customer_id = customerId;
+
+        try {
+          const res = await fetch("/api/create-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+
+          if (data.success && data.order_id) {
+            window.location.href = `payment.html?order_id=${data.order_id}`;
+          } else {
+            alert("Submission error: " + (data.message || "Unknown error"));
+          }
+
+        } catch (err) {
+          alert("Server error: " + err.message);
+        }
+      });
+
+    });
+  </script>
 
 </body>
 </html>

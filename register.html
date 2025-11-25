@@ -1,56 +1,233 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-GB">
 <head>
-  <title>Register - PharmaLogic</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register | PharmaLogic</title>
+  <meta name="description" content="Create a secure PharmaLogic account to manage your Mounjaro weight loss consultations and orders." />
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    header {
+      background: #064635;
+      color: white;
+      padding: 1.2rem 2rem;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header a.brand {
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: flex;
+      gap: 0.7rem;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+    }
+    nav a, nav button {
+      background: white;
+      color: #064635;
+      padding: 0.45rem 1.4rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+    nav a:hover, nav button:hover { background: #1a7c3e; color: white; }
+    #dropdown-menu { display: none; }
+    #dropdown-menu.show { display: block; }
+  </style>
 </head>
 
 <body class="bg-gray-100">
-  <div class="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold mb-4 text-center">Create Account</h2>
 
-    <form id="registerForm" class="space-y-4">
-      <input type="text" name="name" placeholder="Full Name" class="border p-2 w-full rounded" required>
-      <input type="email" name="email" placeholder="Email" class="border p-2 w-full rounded" required>
-      <input type="tel" name="mobile" placeholder="Mobile (+44…)" class="border p-2 w-full rounded" required>
-      <input type="password" name="password" placeholder="Password" class="border p-2 w-full rounded" required>
+<!-- HEADER (same as index) -->
+<header>
+  <a href="index.html" class="brand">
+    <img src="logo.jpeg" alt="PharmaLogic Logo" style="height:50px">
+    PharmaLogic
+  </a>
 
-      <button class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded w-full">
-        Register
-      </button>
-    </form>
+  <nav class="flex gap-3 items-center">
+    <a href="index.html">Home</a>
+    <button onclick="location.href='product.html'">Products</button>
 
-    <p class="mt-4 text-center">
-      Already have an account?
-      <a href="login.html" class="text-blue-600">Login</a>
-    </p>
+    <div class="relative">
+      <button id="account-btn" class="bg-white text-green-900 px-4 py-2 rounded">Account</button>
+      <div id="dropdown-menu" class="absolute right-0 bg-white shadow rounded w-40 mt-2">
+        <a id="menu-login" href="login.html" class="block px-4 py-2 hover:bg-green-100">Login</a>
+        <a id="menu-register" href="register.html" class="block px-4 py-2 hover:bg-green-100">Register</a>
+        <a id="menu-dashboard" href="dashboard.html" class="hidden block px-4 py-2 hover:bg-green-100">Dashboard</a>
+        <button id="menu-logout" class="hidden w-full text-left px-4 py-2 hover:bg-green-100">Logout</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<section class="pt-32 pb-20 px-4 bg-gray-50">
+  <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+
+    <!-- Trust / Text -->
+    <div>
+      <h1 class="text-3xl md:text-4xl font-bold text-blue-900 mb-4">
+        Create your secure PharmaLogic account
+      </h1>
+      <p class="text-gray-700 mb-4">
+        Registering with <strong>PharmaLogic</strong> gives you a personalised dashboard to
+        track your Mounjaro consultations, payments and orders – all under the care of a UK
+        GPhC-registered pharmacy team.
+      </p>
+
+      <ul class="space-y-2 text-sm text-gray-700">
+        <li>• View all past and current orders in one place</li>
+        <li>• Securely update your details</li>
+        <li>• Fast checkout for future consultations</li>
+      </ul>
+    </div>
+
+    <!-- Register Card -->
+    <div class="bg-white shadow-lg rounded-xl p-6">
+      <h2 class="text-xl font-semibold mb-4 text-center text-blue-900">Create account</h2>
+
+      <form id="register-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Full name</label>
+          <input type="text" name="name" class="w-full border rounded px-3 py-2" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Email address</label>
+          <input type="email" name="email" class="w-full border rounded px-3 py-2" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Mobile number (+44)</label>
+          <input type="tel" name="mobile" class="w-full border rounded px-3 py-2" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input type="password" name="password" minlength="6"
+                 class="w-full border rounded px-3 py-2" required />
+          <p class="text-xs text-gray-500 mt-1">Minimum 6 characters. Keep it private and secure.</p>
+        </div>
+
+        <p id="register-error" class="text-sm text-red-600 hidden"></p>
+        <p id="register-success" class="text-sm text-green-700 hidden"></p>
+
+        <button type="submit"
+                class="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2 rounded mt-2">
+          Register
+        </button>
+
+        <p class="text-center text-sm mt-3">
+          Already have an account?
+          <a href="login.html" class="text-blue-700 font-semibold">Login</a>
+        </p>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER (same as index) -->
+<footer class="bg-green-900 text-white py-14">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 px-4">
+    <div>
+      <h3 class="text-lg font-bold mb-4">About Us</h3>
+      <p class="text-sm leading-relaxed">
+        Pharmalogic is an established healthcare group with dedicated clinical pharmacy services across the UK.<br><br>
+        Superintendent Pharmacist:
+        <strong>Haroon Amanji (GPhC 2070534)</strong>
+      </p>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-bold mb-4">Head Office</h3>
+      <p class="text-sm">
+        464 Ranglet Road, Walton Summit Centre<br>
+        Preston, PR5 8AR<br><br>
+        Tel: <a href="tel:+441772620526" class="underline">01772 620526</a><br>
+        Email: <a href="mailto:info@pharmalogic.co.uk" class="underline">info@pharmalogic.co.uk</a>
+      </p>
+    </div>
   </div>
 
-  <script>
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+  <div class="text-center text-xs mt-12 border-t border-gray-700 pt-4">
+    © 2024 MDS Healthcare Limited. All Rights Reserved.
+  </div>
+</footer>
 
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
+<script>
+  // Header account dropdown logic (same as index)
+  document.getElementById("account-btn").addEventListener("click", () => {
+    document.getElementById("dropdown-menu").classList.toggle("show");
+  });
 
+  const cid = localStorage.getItem("customer_id");
+  if (cid) {
+    document.getElementById("menu-login").style.display = "none";
+    document.getElementById("menu-register").style.display = "none";
+    document.getElementById("menu-dashboard").style.display = "block";
+    document.getElementById("menu-logout").style.display = "block";
+  }
+
+  document.getElementById("menu-logout").addEventListener("click", () => {
+    localStorage.clear();
+    location.href = "index.html";
+  });
+
+  // Register form handler
+  document.getElementById("register-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const errorEl = document.getElementById("register-error");
+    const successEl = document.getElementById("register-success");
+    errorEl.classList.add("hidden");
+    successEl.classList.add("hidden");
+
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
       const res = await fetch("/api/customer-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
 
-      const result = await res.json();
+      const data = await res.json();
 
-      if (result.success) {
-        localStorage.setItem("customer_id", result.customer_id);
-        alert("Registration successful");
-        window.location.href = "index.html";
-      } else {
-        alert(result.message);
+      if (!data.success) {
+        errorEl.textContent = data.message || "Registration failed.";
+        errorEl.classList.remove("hidden");
+        return;
       }
-    });
-  </script>
-</body>
 
+      // Save session and redirect
+      localStorage.setItem("customer_id", data.customer_id);
+      localStorage.setItem("customer_name", payload.name);
+
+      successEl.textContent = "Registration successful. Redirecting to your dashboard...";
+      successEl.classList.remove("hidden");
+
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 800);
+
+    } catch (err) {
+      errorEl.textContent = "Server error. Please try again.";
+      errorEl.classList.remove("hidden");
+    }
+  });
+</script>
+</body>
 </html>

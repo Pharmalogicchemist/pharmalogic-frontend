@@ -1,129 +1,87 @@
 // netlify/functions/create-checkout-session.js
-const { sql } = require("./database.js");
-const stripeLib = require("stripe");
+import Stripe from "stripe";
+import { sql } from "./database.js";
 
-const stripe = stripeLib(process.env.STRIPE_SECRET_KEY || "");
-
-// Price table – edit these numbers as you wish (GBP)
-const PRICE_MAP = {
-  "2.5mg": 189.0,
-  "5mg": 199.0,
-  "7.5mg": 209.0,
-  "10mg": 219.0,
-  "12.5mg": 229.0,
-  "15mg": 239.0
-};
-
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: false, message: "Method not allowed" })
-    };
-  }
-
-  if (!process.env.STRIPE_SECRET_KEY) {
-    console.error("Missing STRIPE_SECRET_KEY env var");
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: false, message: "Stripe not configured" })
-    };
-  }
-
+export default async (req) => {
   try {
-    const body = JSON.parse(event.body || "{}");
-    const { order_id, success_url, cancel_url } = body;
-
-    if (!order_id || !success_url || !cancel_url) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Missing fields" })
-      };
+    const method = req.method || req.httpMethod;
+    if (method !== "POST") {
+      return new Response(
+        JSON.stringify({ success: false, message: "Method not allowed" }),
+        { status: 405 }
+      );
     }
 
-    // 1) Fetch order + customer + consultation data
-    const rows = await sql`
-      SELECT
-        o.id,
-        o.consultation_data,
-        c.email,
-        c.name
-      FROM orders o
-      JOIN customers c ON o.customer_id = c.id
-      WHERE o.id = ${order_id}
-      LIMIT 1
+    const { order_id } = await req.json();
+
+    if (!order_id) {
+      return Response.json({
+        success: false,
+        message: "Missing order_id",
+      });
+    }
+
+    /** 🔥 Ensure Stripe is configured in Netlify ENV */
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const publicKey = process.env.STRIPE_PUBLIC_KEY;
+
+    if (!secretKey || !publicKey) {
+      return Response.json({
+        success: false,
+        message: "Stripe not configured",
+      });
+    }
+
+    const stripe = new Stripe(secretKey);
+
+    // Get the order details
+    const orders = await sql`
+      SELECT * FROM orders WHERE id = ${order_id}
     `;
 
-    if (rows.length === 0) {
-      return {
-        statusCode: 404,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Order not found" })
-      };
+    if (orders.length === 0) {
+      return Response.json({
+        success: false,
+        message: "Order not found",
+      });
     }
 
-    const order = rows[0];
-    const consultation = order.consultation_data || {};
-    const strength = consultation.mounjaro_strength;
+    const order = orders[0];
 
-    const amount = PRICE_MAP[strength] || 0;
-    if (!amount) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ success: false, message: "Invalid or missing Mounjaro strength" })
-      };
-    }
-
-    // 2) Create Stripe Checkout Session
+    // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
       payment_method_types: ["card"],
-      customer_email: order.email || undefined,
+      mode: "payment",
+      success_url: `https://pharmalogic-weightlossmedication.com/order-success.html?order_id=${order_id}`,
+      cancel_url: `https://pharmalogic-weightlossmedication.com/order-failed.html?order_id=${order_id}`,
       line_items: [
         {
           price_data: {
             currency: "gbp",
             product_data: {
-              name: `Mounjaro consultation (${strength})`
+              name: order.mounjaro_strength + " Mounjaro",
             },
-            unit_amount: Math.round(amount * 100)
+            unit_amount: Math.round(order.total_price * 100),
           },
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ],
-      success_url: success_url,
-      cancel_url: cancel_url,
       metadata: {
-        orderId: String(order.id)
-      }
+        order_id: order_id,
+      },
     });
 
-    // 3) Update order with session + amount
-    await sql`
-      UPDATE orders
-      SET stripe_session_id = ${session.id},
-          total_amount = ${amount}
-      WHERE id = ${order.id}
-    `;
+    return Response.json({
+      success: true,
+      message: "Session created",
+      sessionId: session.id,
+      publicKey,
+    });
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        success: true,
-        url: session.url
-      })
-    };
   } catch (err) {
-    console.error("create-checkout-session error:", err);
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ success: false, message: "Server error" })
-    };
+    return Response.json({
+      success: false,
+      message: err.message,
+    });
   }
 };

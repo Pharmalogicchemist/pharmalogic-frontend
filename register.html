@@ -1,131 +1,56 @@
 <!DOCTYPE html>
-<html lang="en-GB">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PharmaLogic - Register</title>
+<html>
 
+<head>
+  <title>Register - PharmaLogic</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100">
+  <div class="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold mb-4 text-center">Create Account</h2>
 
-<header class="bg-green-900 text-white p-4 flex justify-between items-center fixed top-0 left-0 w-full z-50">
-  <a href="index.html" class="text-xl font-bold flex items-center gap-2">
-    <img src="logo.jpeg" class="h-10" /> PharmaLogic
-  </a>
-</header>
+    <form id="registerForm" class="space-y-4">
+      <input type="text" name="name" placeholder="Full Name" class="border p-2 w-full rounded" required>
+      <input type="email" name="email" placeholder="Email" class="border p-2 w-full rounded" required>
+      <input type="tel" name="mobile" placeholder="Mobile (+44…)" class="border p-2 w-full rounded" required>
+      <input type="password" name="password" placeholder="Password" class="border p-2 w-full rounded" required>
 
-<main class="max-w-md mx-auto mt-32 bg-white p-8 rounded shadow">
-  <h1 class="text-3xl font-bold text-center text-green-900 mb-6">Create Account</h1>
+      <button class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded w-full">
+        Register
+      </button>
+    </form>
 
-  <form id="register-form" class="space-y-6">
+    <p class="mt-4 text-center">
+      Already have an account?
+      <a href="login.html" class="text-blue-600">Login</a>
+    </p>
+  </div>
 
-    <div>
-      <label class="block text-gray-700 font-semibold mb-1">Full Name</label>
-      <input id="fullname" type="text" required class="w-full border p-2 rounded" />
-    </div>
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    <div>
-      <label class="block text-gray-700 font-semibold mb-1">Email</label>
-      <input id="email" type="email" required class="w-full border p-2 rounded" />
-    </div>
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
 
-    <div>
-      <label class="block text-gray-700 font-semibold mb-1">Password</label>
-      <input id="password" type="password" required minlength="8" class="w-full border p-2 rounded" />
-    </div>
+      const res = await fetch("/api/customer-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
 
-    <div>
-      <label class="block text-gray-700 font-semibold mb-1">Confirm Password</label>
-      <input id="password_confirm" type="password" required minlength="8" class="w-full border p-2 rounded" />
-    </div>
+      const result = await res.json();
 
-    <button 
-      type="submit"
-      class="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded">
-      Register
-    </button>
-
-  </form>
-
-  <p id="register-message" class="text-center mt-4 font-semibold"></p>
-
-  <p class="mt-6 text-center">
-    Already have an account?
-    <a href="login.html" class="text-green-700 underline">Login</a>
-  </p>
-</main>
-
-<script>
-document.getElementById("register-form").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  const fullname = document.getElementById("fullname").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const confirm = document.getElementById("password_confirm").value.trim();
-  const msg = document.getElementById("register-message");
-
-  msg.innerText = "";
-  msg.style.color = "black";
-
-  if (!fullname || !email || !password || !confirm) {
-    msg.innerText = "All fields are required.";
-    msg.style.color = "red";
-    return;
-  }
-
-  if (password !== confirm) {
-    msg.innerText = "Passwords do not match.";
-    msg.style.color = "red";
-    return;
-  }
-
-  msg.innerText = "Creating your account...";
-  msg.style.color = "black";
-
-  try {
-    const res = await fetch("/.netlify/functions/customer-register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: fullname, email, password })
+      if (result.success) {
+        localStorage.setItem("customer_id", result.customer_id);
+        alert("Registration successful");
+        window.location.href = "index.html";
+      } else {
+        alert(result.message);
+      }
     });
-
-    const text = await res.text();
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      msg.innerText = "Invalid server response.";
-      msg.style.color = "red";
-      return;
-    }
-
-    if (!res.ok) {
-      msg.innerText = data.error || data.details || "Registration failed.";
-      msg.style.color = "red";
-      return;
-    }
-
-    if (data.success) {
-      msg.innerText = "Account created successfully! Redirecting...";
-      msg.style.color = "green";
-      setTimeout(() => window.location.href = "login.html", 1500);
-      return;
-    }
-
-    msg.innerText = data.error || "Registration failed.";
-    msg.style.color = "red";
-
-  } catch(err) {
-    console.error("Frontend error:", err);
-    msg.innerText = "Server unreachable. Please try again.";
-    msg.style.color = "red";
-  }
-});
-</script>
-
+  </script>
 </body>
+
 </html>

@@ -1,64 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Payment - PharmaLogic</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-100 text-gray-900">
+
+  <!-- HEADER -->
   <div class="bg-green-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
-    <a href="index.html"><img src="logo.jpeg" alt="PharmaLogic Logo" class="h-10" /></a>
+    <a href="index.html">
+      <img src="logo.jpeg" alt="PharmaLogic Logo" class="h-10" />
+    </a>
     <a href="index.html" class="bg-white text-blue-900 font-semibold px-4 py-2 rounded hover:bg-gray-100">Home</a>
   </div>
 
-  <div class="max-w-xl mx-auto p-6 bg-white shadow mt-10 rounded">
-    <h1 class="text-2xl font-bold mb-4">Processing Payment</h1>
-    <p id="status">Please wait while we redirect you to secure payment...</p>
+  <!-- MAIN CONTAINER -->
+  <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 mt-10">
+    <h1 class="text-3xl font-bold text-center text-blue-800 mb-4">Complete Your Payment</h1>
+
+    <p id="loading" class="text-center text-gray-700 text-lg">
+      Preparing your payment session…
+    </p>
+
+    <p id="error-message" class="hidden text-center text-red-600 font-semibold mt-4"></p>
   </div>
 
   <script>
-    async function startPayment() {
+    document.addEventListener("DOMContentLoaded", async () => {
+      /** Get order_id from URL **/
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get("order_id");
 
       if (!orderId) {
-        document.getElementById("status").textContent =
-          "Missing order ID. Please go back and restart the consultation.";
+        document.getElementById("loading").innerText = "Missing order ID.";
         return;
       }
 
+      console.log("Order ID:", orderId);
+
       try {
+        /** Create Stripe checkout session **/
         const res = await fetch("/api/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            order_id: Number(orderId),
-            success_url: window.location.origin + "/order-success.html?order_id=" + orderId,
-            cancel_url: window.location.origin + "/order-failed.html?order_id=" + orderId
-          })
+          body: JSON.stringify({ order_id: orderId })
         });
 
         const data = await res.json();
 
-        if (!data.success || !data.url) {
-          console.error("Stripe session error:", data);
-          document.getElementById("status").textContent =
-            "Unable to start payment. Please contact support.";
+        if (!data.success || !data.sessionId || !data.publicKey) {
+          document.getElementById("loading").classList.add("hidden");
+          document.getElementById("error-message").classList.remove("hidden");
+          document.getElementById("error-message").innerText =
+            data.message || "Unable to create payment session.";
           return;
         }
 
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      } catch (err) {
-        console.error(err);
-        document.getElementById("status").textContent =
-          "Server error while starting payment.";
-      }
-    }
+        /** Redirect to Stripe Checkout **/
+        const stripe = Stripe(data.publicKey);
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
 
-    startPayment();
+      } catch (err) {
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("error-message").classList.remove("hidden");
+        document.getElementById("error-message").innerText =
+          "Server error: " + err.message;
+      }
+    });
   </script>
+
 </body>
 </html>

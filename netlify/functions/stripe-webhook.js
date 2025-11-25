@@ -2,7 +2,7 @@
 const stripeLib = require("stripe");
 const { sql } = require("./database.js");
 
-const stripe = stripeLib(process.env.STRIPE_SECRET_KEY || "pk_test_51Rmj2QQslD1AIGDminivIkWafT4K6CtYDdV1EuxGeVNwd3GftrJTKMISPXeOqPAWBd5lAzO3OAtyudjp0tTaE67y00ow2kGrHP");
+const stripe = stripeLib(process.env.STRIPE_SECRET_KEY || "");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -17,7 +17,6 @@ exports.handler = async (event) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let stripeEvent;
-
   try {
     if (webhookSecret && sig) {
       stripeEvent = stripe.webhooks.constructEvent(
@@ -26,7 +25,6 @@ exports.handler = async (event) => {
         webhookSecret
       );
     } else {
-      // Fallback: parse without verification (development only)
       stripeEvent = JSON.parse(event.body || "{}");
     }
   } catch (err) {

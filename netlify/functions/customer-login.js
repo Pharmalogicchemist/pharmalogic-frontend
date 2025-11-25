@@ -28,19 +28,13 @@ export default async (req) => {
     `;
 
     if (users.length === 0) {
-      return Response.json({
-        success: false,
-        message: "Invalid email or password"
-      });
+      return Response.json({ success: false, message: "Invalid email or password" });
     }
 
     const user = users[0];
 
     if (!verifyPassword(password, user.password_hash)) {
-      return Response.json({
-        success: false,
-        message: "Invalid email or password"
-      });
+      return Response.json({ success: false, message: "Invalid email or password" });
     }
 
     return Response.json({
@@ -50,6 +44,6 @@ export default async (req) => {
     });
 
   } catch (err) {
-    return Response.json({ success: false, message: err.message }, { status: 500 });
+    return Response.json({ success: false, message: err.message });
   }
 };

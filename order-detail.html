@@ -1,105 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Order Detail - PharmaLogic</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body { background-color: #f8f9fa; }
-    .label { font-weight: 600; }
-    .value { margin-bottom: 1rem; }
-    hr { margin-top: 2rem; margin-bottom: 2rem; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Order Details</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3/dist/tailwind.min.css" />
 </head>
-<body>
-  <div class="container mt-5 mb-5">
-    <h2>Order / Patient Details</h2>
-    <div id="detailsContainer" class="mt-4">
-      Loading details...
+
+<body class="p-6 bg-gray-100">
+
+  <a href="admin-dashboard.html" class="text-blue-600 underline">&larr; Back to Dashboard</a>
+
+  <div class="grid grid-cols-4 gap-6 mt-6">
+
+    <!-- LEFT: STATS -->
+    <div class="col-span-1 bg-white p-4 shadow rounded">
+      <h2 class="text-xl font-semibold mb-3">Customer Stats</h2>
+      <p id="totalOrders">Total Orders: --</p>
+      <p id="paidOrders">Paid Orders: --</p>
+      <p id="totalAmount">Total Amount Paid: £--</p>
     </div>
-    <a href="admin.html" class="btn btn-secondary mt-4">← Back to Dashboard</a>
+
+    <!-- RIGHT: ORDER DETAILS -->
+    <div class="col-span-3 space-y-6">
+
+      <!-- CUSTOMER INFO -->
+      <div class="bg-white p-4 shadow rounded">
+        <h2 class="text-xl font-semibold mb-3">Patient Details</h2>
+        <p><strong>Name:</strong> <span id="name"></span></p>
+        <p><strong>Mobile:</strong> <span id="mobile"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Address:</strong> <span id="address"></span></p>
+      </div>
+
+      <!-- CONSULTATION FORM -->
+      <div class="bg-white p-4 shadow rounded">
+        <h2 class="text-xl font-semibold mb-3">Consultation Form</h2>
+        <pre id="consultation" class="bg-gray-100 p-4 rounded overflow-x-auto"></pre>
+      </div>
+
+      <!-- FILES -->
+      <div class="bg-white p-4 shadow rounded">
+        <h2 class="text-xl font-semibold mb-3">Uploaded Files</h2>
+        <div id="filesList" class="space-y-2"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const netlifyToken = "nfp_Sd1XEwU9QnkyK9B3C7aQ5QzFBUC2FdM5a872";
+    async function loadOrderDetails() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
 
-    // Get submission ID from URL query string
-    const params = new URLSearchParams(window.location.search);
-    const submissionId = params.get("id");
+      const res = await fetch(`/api/get-order?id=${id}`);
+      const data = await res.json();
 
-    if (!submissionId) {
-      document.getElementById("detailsContainer").innerHTML = "<p class='text-danger'>No submission ID provided.</p>";
-    } else {
-      fetchSubmissionDetails(submissionId);
-    }
+      if (!data.success) {
+        alert("Failed to load order");
+        return;
+      }
 
-    async function fetchSubmissionDetails(id) {
-      try {
-        const res = await fetch(`https://api.netlify.com/api/v1/submissions/${id}`, {
-          headers: {
-            Authorization: `Bearer ${netlifyToken}`
-          }
+      const { order, stats, files } = data;
+
+      document.getElementById("name").textContent = order.customer_name;
+      document.getElementById("mobile").textContent = order.customer_mobile;
+      document.getElementById("email").textContent = order.customer_email || "N/A";
+      document.getElementById("address").textContent = order.customer_address;
+
+      document.getElementById("consultation").textContent = JSON.stringify(
+        order.consultation_data,
+        null,
+        2
+      );
+
+      document.getElementById("totalOrders").textContent = 
+        "Total Orders: " + stats.total_orders;
+
+      document.getElementById("paidOrders").textContent =
+        "Paid Orders: " + stats.paid_orders;
+
+      document.getElementById("totalAmount").textContent =
+        "Total Amount Paid: £" + stats.total_paid_amount;
+
+      const filesList = document.getElementById("filesList");
+      filesList.innerHTML = "";
+
+      if (files.length === 0) {
+        filesList.innerHTML = "<p>No files uploaded</p>";
+      } else {
+        files.forEach(f => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <a href="${f.file_url}" 
+               class="text-blue-600 underline"
+               target="_blank">
+               ${f.file_type || "File"} (uploaded ${new Date(f.uploaded_at).toLocaleString()})
+            </a>
+          `;
+          filesList.appendChild(div);
         });
-        if (!res.ok) throw new Error("Failed to fetch submission details.");
-        const submission = await res.json();
-        renderDetails(submission);
-      } catch (error) {
-        document.getElementById("detailsContainer").innerHTML = `<p class="text-danger">${error.message}</p>`;
       }
     }
 
-    function renderDetails(submission) {
-      const d = submission.data;
-      const container = document.getElementById("detailsContainer");
-
-      // Helper to safely get field or fallback
-      const f = (field) => d[field] || "-";
-
-      container.innerHTML = `
-        <div class="mb-3"><span class="label">Order ID:</span> #${submission.number || submission.id}</div>
-        <div class="mb-3"><span class="label">Patient Name:</span> ${f("full_name") || f("full-name") || f("name")}</div>
-        <div class="mb-3"><span class="label">Email:</span> ${f("email")}</div>
-        <div class="mb-3"><span class="label">Phone:</span> ${f("phone")}</div>
-        <div class="mb-3"><span class="label">Product / Strength:</span> ${f("product") || f("product-strength")}</div>
-        <div class="mb-3"><span class="label">Status:</span> ${f("status") || "Pending"}</div>
-        <div class="mb-3"><span class="label">Date Submitted:</span> ${new Date(submission.created_at).toLocaleString()}</div>
-
-        <hr />
-
-        <h4>Billing Address</h4>
-        <div class="mb-2"><span class="label">Address Line 1:</span> ${f("billing_address_1")}</div>
-        <div class="mb-2"><span class="label">Address Line 2:</span> ${f("billing_address_2")}</div>
-        <div class="mb-2"><span class="label">City:</span> ${f("billing_city")}</div>
-        <div class="mb-2"><span class="label">State/Region:</span> ${f("billing_state")}</div>
-        <div class="mb-2"><span class="label">Postcode:</span> ${f("billing_postcode")}</div>
-        <div class="mb-3"><span class="label">Country:</span> ${f("billing_country")}</div>
-
-        <h4>Shipping Address</h4>
-        <div class="mb-2"><span class="label">Address Line 1:</span> ${f("shipping_address_1")}</div>
-        <div class="mb-2"><span class="label">Address Line 2:</span> ${f("shipping_address_2")}</div>
-        <div class="mb-2"><span class="label">City:</span> ${f("shipping_city")}</div>
-        <div class="mb-2"><span class="label">State/Region:</span> ${f("shipping_state")}</div>
-        <div class="mb-2"><span class="label">Postcode:</span> ${f("shipping_postcode")}</div>
-        <div class="mb-3"><span class="label">Country:</span> ${f("shipping_country")}</div>
-
-        <hr />
-
-        <div class="mb-3"><span class="label">Address:</span> ${f("address")}</div>
-
-        <div class="mb-3"><span class="label">ID Upload:</span> ${
-          f("idupload") || f("id-upload")
-            ? `<a href="${f("idupload") || f("id-upload")}" target="_blank" rel="noopener noreferrer">View Uploaded ID</a>`
-            : "No ID uploaded"
-        }</div>
-
-        <hr />
-        <h5>All Submitted Data</h5>
-        <pre>${JSON.stringify(d, null, 2)}</pre>
-      `;
-    }
+    loadOrderDetails();
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
